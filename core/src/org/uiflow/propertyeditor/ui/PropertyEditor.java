@@ -2,7 +2,9 @@ package org.uiflow.propertyeditor.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import org.uiflow.UiContext;
+import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.Property;
 import org.uiflow.propertyeditor.model.PropertyListener;
 import org.uiflow.widgets.FlowWidgetBase;
@@ -13,16 +15,32 @@ import org.uiflow.widgets.FlowWidgetBase;
 public class PropertyEditor extends FlowWidgetBase {
 
     private Property property;
-
     private Label nameLabel;
+    private Table table;
+    private ValueEditor valueEditor;
+
+    private ValueEditorListener valueEditorListener = new ValueEditorListener() {
+        @Override public void onValueEdited(ValueEditor valueEditor, Object currentValue) {
+            if (property != null) {
+                property.setValue(currentValue);
+            }
+        }
+    };
+
 
     private final PropertyListener propertyListener = new PropertyListener() {
-        @Override public void onValueChanged(Property property) {
-            // TODO: Implement
-
+        @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+            if (valueEditor != null) {
+                valueEditor.setEditedValue(property.getValue());
+            }
         }
 
-        @Override public void onPropertyChanged(Property property) {
+        @Override public void onValueEditorChanged(Bean bean, Property property) {
+            buildValueEditor();
+            updateUi();
+        }
+
+        @Override public void onPropertyChanged(Bean bean, Property property) {
             updateUi();
         }
     };
@@ -55,22 +73,52 @@ public class PropertyEditor extends FlowWidgetBase {
         }
     }
 
-    @Override protected Actor createActor(UiContext uiContext) {
-        // TODO: Implement
+    @Override protected Actor createUi(UiContext uiContext) {
+        table = new Table(uiContext.getSkin());
 
         nameLabel = new Label("", uiContext.getSkin());
+        table.add(nameLabel).left();
 
-        return nameLabel;
+        buildValueEditor();
+
+        updateUi();
+
+        return table;
+    }
+
+    private void buildValueEditor() {
+        // Remove old if present
+        if (valueEditor != null && valueEditor.isUiCreated()) {
+            valueEditor.removeListener(valueEditorListener);
+            table.removeActor(valueEditor.getUi(getUiContext()));
+            valueEditor.dispose();
+        }
+
+        if (property == null) {
+            valueEditor = null;
+        }
+        else {
+            // Create instance
+            try {
+                valueEditor = property.getEditorType().newInstance();
+            } catch (Exception e) {
+                throw new IllegalStateException("Could not create editor for property " + property, e);
+            }
+
+            valueEditor.addListener(valueEditorListener);
+            table.add(valueEditor.getUi(getUiContext())).right();
+        }
+
     }
 
     private void updateUi() {
         if (isUiCreated()) {
-            // TODO: Implement
-
+            // Update name
             final String name = property != null ? property.getName() : "";
             nameLabel.setText(name);
 
-
+            // Update edited value
+            if (property != null && valueEditor != null) valueEditor.setEditedValue(property.getValue());
         }
     }
 }

@@ -19,7 +19,7 @@ public interface Bean {
 
 
     /**
-     * Listen to changes in the bean.
+     * Listen to changes in the bean and the properties of it.
      */
     void addListener(BeanListener listener);
 

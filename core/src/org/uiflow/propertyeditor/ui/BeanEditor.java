@@ -1,6 +1,8 @@
 package org.uiflow.propertyeditor.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.Bean;
@@ -17,9 +19,19 @@ public class BeanEditor extends FlowWidgetBase {
 
     private final Map<Property, PropertyEditor> propertyEditors = new HashMap<Property, PropertyEditor>();
     private Bean bean;
+    private Table beanTable;
     private VerticalGroup propertyList;
 
     private final BeanListener beanListener = new BeanListener() {
+        @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+        }
+
+        @Override public void onValueEditorChanged(Bean bean, Property property) {
+        }
+
+        @Override public void onPropertyChanged(Bean bean, Property property) {
+        }
+
         @Override public void onChanged(Bean bean) {
             updateUi();
         }
@@ -32,6 +44,7 @@ public class BeanEditor extends FlowWidgetBase {
             removePropertyUi(property);
         }
     };
+    private Label nameLabel;
 
     public Bean getBean() {
         return bean;
@@ -53,18 +66,29 @@ public class BeanEditor extends FlowWidgetBase {
         }
     }
 
-    @Override protected Actor createActor(UiContext uiContext) {
+    @Override protected Actor createUi(UiContext uiContext) {
+        beanTable = new Table(uiContext.getSkin());
+
+        // Name label
+        nameLabel = new Label("", uiContext.getSkin());
+        beanTable.add(nameLabel).expandX();
+        beanTable.row();
+
+        // Property list
         propertyList = new VerticalGroup();
+        beanTable.add(propertyList).expandX();
 
         updateUi();
 
-        return propertyList;
+        return beanTable;
     }
 
     private void updateUi() {
         if (isUiCreated()) {
             // Update name
-            // TODO
+            final Bean bean = getBean();
+            String name = bean == null ? "No Bean" : bean.getName();
+            nameLabel.setText(name);
 
             updateAvailablePropertyUis();
         }
@@ -121,7 +145,7 @@ public class BeanEditor extends FlowWidgetBase {
             // Remove the widget from the ui if the ui has been created
             if (editor != null) {
                 if (editor.isUiCreated()) {
-                    propertyList.removeActor(editor.getActor(getUiContext()));
+                    propertyList.removeActor(editor.getUi(getUiContext()));
                 }
 
                 // Dispose removed editor
@@ -139,7 +163,7 @@ public class BeanEditor extends FlowWidgetBase {
             propertyEditors.put(property, propertyEditor);
 
             // Add to ui
-            propertyList.addActor(propertyEditor.getActor(getUiContext()));
+            propertyList.addActor(propertyEditor.getUi(getUiContext()));
         }
     }
 

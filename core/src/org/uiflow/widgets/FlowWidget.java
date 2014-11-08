@@ -9,7 +9,9 @@ import org.uiflow.UiContext;
  */
 public interface FlowWidget  {
 
-    Actor getActor(UiContext uiContext);
+    Actor getUi(UiContext uiContext);
+
+    boolean isUiCreated();
 
     void dispose();
 }

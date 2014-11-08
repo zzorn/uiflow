@@ -1,10 +1,9 @@
 package org.uiflow.propertyeditor.model;
 
 /**
- * Listens to changes in a bean.
+ * Listens to changes in a bean and the properties in it.
  */
-public interface BeanListener {
-
+public interface BeanListener extends PropertyListener {
     /**
      * Called if the bean changed in a significant way.
      */
