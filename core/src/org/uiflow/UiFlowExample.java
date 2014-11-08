@@ -22,14 +22,12 @@ import org.uiflow.propertyeditor.ui.editors.TextLineEditor;
 
 public class UiFlowExample extends ApplicationAdapter {
 
-    private SpriteBatch batch;
     private Stage stage;
     private Skin skin;
 
 	@Override
 	public void create () {
         // Setup
-		batch = new SpriteBatch();
         stage = new Stage();
         skin = createTestSkin();
         Gdx.input.setInputProcessor(stage);
