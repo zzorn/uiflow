@@ -6,6 +6,14 @@ sourceSets.main.java.srcDirs = [ "src/" ]
 project.ext.mainClassName = "org.uiflow.desktop.DesktopLauncher"
 project.ext.assetsDir = new File("../core/assets");
 
+task packTextures(dependsOn: classes, type: JavaExec) {
+    main = 'com.badlogic.gdx.tools.texturepacker.TexturePacker'
+    classpath = sourceSets.main.runtimeClasspath
+    args = ['../asset_sources/skin', '../core/assets/uiflow/skin', 'uiflow.atlas']
+}
+
+
+
 task run(dependsOn: classes, type: JavaExec) {
     main = project.mainClassName
     classpath = sourceSets.main.runtimeClasspath
@@ -13,6 +21,9 @@ task run(dependsOn: classes, type: JavaExec) {
     workingDir = project.assetsDir
     ignoreExitValue = true
 }
+
+run.dependsOn packTextures
+
 
 task dist(type: Jar) {
     from files(sourceSets.main.output.classesDir)
@@ -26,6 +37,8 @@ task dist(type: Jar) {
 }
 
 dist.dependsOn classes
+dist.dependsOn packTextures
+
 
 eclipse {
     project {

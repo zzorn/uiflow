@@ -7,7 +7,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -24,17 +23,19 @@ public class UiFlowExample extends ApplicationAdapter {
 
     private Stage stage;
     private Skin skin;
+    private UiContext uiContext;
 
-	@Override
+    @Override
 	public void create () {
         // Setup
         stage = new Stage();
-        skin = createTestSkin();
+        // skin = createTestSkin();
         Gdx.input.setInputProcessor(stage);
-        UiContext uiContext = new DefaultUiContext(skin, null);
+        uiContext = new DefaultUiContext();
 
         // Create root table
         Table rootTable = new Table();
+
         rootTable.setFillParent(true);
         stage.addActor(rootTable);
 
@@ -66,7 +67,10 @@ public class UiFlowExample extends ApplicationAdapter {
     @Override
     public void dispose () {
         stage.dispose();
-        skin.dispose();
+
+        uiContext.dispose();
+
+       // skin.dispose();
     }
 
     private Bean createTestBean() {

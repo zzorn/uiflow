@@ -22,6 +22,8 @@ public class BeanEditor extends FlowWidgetBase {
     private Table beanTable;
     private VerticalGroup propertyList;
 
+    private float lastMaxLabelWidth = 0;
+
     private final BeanListener beanListener = new BeanListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
         }
@@ -30,6 +32,8 @@ public class BeanEditor extends FlowWidgetBase {
         }
 
         @Override public void onPropertyChanged(Bean bean, Property property) {
+            // Align labels if needed (in case the label of some property was changed)
+            alignLabels();
         }
 
         @Override public void onChanged(Bean bean) {
@@ -76,9 +80,11 @@ public class BeanEditor extends FlowWidgetBase {
 
         // Property list
         propertyList = new VerticalGroup();
-        beanTable.add(propertyList).expandX();
+        beanTable.add(propertyList).expand().fill();
 
         updateUi();
+
+        alignLabels();
 
         return beanTable;
     }
@@ -151,6 +157,9 @@ public class BeanEditor extends FlowWidgetBase {
                 // Dispose removed editor
                 editor.dispose();
             }
+
+            // Align labels if needed
+            alignLabels();
         }
     }
 
@@ -164,7 +173,41 @@ public class BeanEditor extends FlowWidgetBase {
 
             // Add to ui
             propertyList.addActor(propertyEditor.getUi(getUiContext()));
+
+            // Update label width of all properties if needed, to align the labels
+            alignLabels();
         }
+    }
+
+    private void alignLabels() {
+        System.out.println("BeanEditor.alignLabels");
+        System.out.println("lastMaxLabelWidth = " + lastMaxLabelWidth);
+
+        // Calculate maximum label width
+        float maxNameLabelWidth = -1;
+        for (PropertyEditor propertyEditor : propertyEditors.values()) {
+            final float nameLabelWidth = propertyEditor.getNameLabelWidth();
+            if (nameLabelWidth > maxNameLabelWidth) {
+                maxNameLabelWidth = nameLabelWidth;
+            }
+        }
+
+        System.out.println("maxNameLabelWidth = " + maxNameLabelWidth);
+
+        // If the maximum label width changed, update all property editor label widths to align them
+        if (maxNameLabelWidth != lastMaxLabelWidth) {
+            lastMaxLabelWidth = maxNameLabelWidth;
+
+            System.out.println("realigning, max width " + lastMaxLabelWidth);
+
+            for (PropertyEditor propertyEditor : propertyEditors.values()) {
+                propertyEditor.setNameLabelWidth(maxNameLabelWidth);
+            }
+
+            // Relayout as needed
+            beanTable.layout();
+        }
+
     }
 
 }

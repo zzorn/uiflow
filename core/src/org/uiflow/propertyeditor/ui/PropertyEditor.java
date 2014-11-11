@@ -1,8 +1,11 @@
 package org.uiflow.propertyeditor.ui;
 
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.Property;
@@ -10,7 +13,7 @@ import org.uiflow.propertyeditor.model.PropertyListener;
 import org.uiflow.widgets.FlowWidgetBase;
 
 /**
- *
+ * Helper class for handling the edition of one property
  */
 public class PropertyEditor extends FlowWidgetBase {
 
@@ -44,6 +47,7 @@ public class PropertyEditor extends FlowWidgetBase {
             updateUi();
         }
     };
+    private Cell nameLabelCell;
 
     public PropertyEditor() {
         this(null);
@@ -77,13 +81,29 @@ public class PropertyEditor extends FlowWidgetBase {
         table = new Table(uiContext.getSkin());
 
         nameLabel = new Label("", uiContext.getSkin());
-        table.add(nameLabel).left();
+        nameLabel.setAlignment(Align.right);
+        nameLabelCell = table.add(nameLabel);
+        nameLabelCell.expandX();
+        nameLabelCell.space(getUiContext().getGap());
 
         buildValueEditor();
 
         updateUi();
 
         return table;
+    }
+
+    public void setNameLabelWidth(float width) {
+        if (nameLabelCell == null) throw new IllegalStateException("Name label not yet initialized for this property, can not call setNameLabelWidth");
+
+        nameLabelCell.width(width).right();
+        nameLabel.layout();
+    }
+
+    public float getNameLabelWidth() {
+        if (nameLabel == null) throw new IllegalStateException("Name label not yet initialized for this property, can not call getNameLabelWidth");
+
+        return nameLabel.getPrefWidth();
     }
 
     private void buildValueEditor() {
@@ -115,7 +135,7 @@ public class PropertyEditor extends FlowWidgetBase {
         if (isUiCreated()) {
             // Update name
             final String name = property != null ? property.getName() : "";
-            nameLabel.setText(name);
+            nameLabel.setText(name + ":");
 
             // Update edited value
             if (property != null && valueEditor != null) valueEditor.setEditedValue(property.getValue());
