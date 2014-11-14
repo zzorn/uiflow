@@ -5,9 +5,24 @@ package org.uiflow.propertyeditor.ui;
  */
 public enum LabelLocation {
 
+    /**
+     * Locate label to the left of the content.
+     */
     LEFT(true),
+
+    /**
+     * Locate label above the content.
+     */
     ABOVE(true),
-    UNDER(false),
+
+    /**
+     * Locate label below the content.
+     */
+    BELOW(false),
+
+    /**
+     * Do not show a label at all.
+     */
     NONE(false)
     ;
 

@@ -1,8 +1,6 @@
 package org.uiflow.propertyeditor.ui;
 
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -50,17 +48,25 @@ public class PropertyEditor extends FlowWidgetBase {
             updateUi();
         }
     };
-    private Cell nameLabelCell;
     private Container<Actor> valueEditorContainer;
 
+    /**
+     */
     public PropertyEditor() {
         this(null);
     }
 
+    /**
+     * @param property property to edit
+     */
     public PropertyEditor(Property property) {
         this(property, LabelLocation.LEFT);
     }
 
+    /**
+     * @param property property to edit
+     * @param labelLocation relative location of the label.
+     */
     public PropertyEditor(Property property, LabelLocation labelLocation) {
         this.labelLocation = labelLocation;
         setProperty(property);
@@ -113,7 +119,7 @@ public class PropertyEditor extends FlowWidgetBase {
                 table.add(valueEditorContainer).expand();
                 nameLabel.setAlignment(Align.right);
                 break;
-            case UNDER:
+            case BELOW:
                 table.add(valueEditorContainer).expand();
                 table.row();
                 table.add(labelContainer).expandX().left();

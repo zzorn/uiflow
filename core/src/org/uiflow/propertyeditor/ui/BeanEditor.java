@@ -50,12 +50,19 @@ public class BeanEditor extends FlowWidgetBase {
             removePropertyUi(property);
         }
     };
+
     private Label nameLabel;
 
+
+    /**
+     */
     public BeanEditor() {
         this(LabelLocation.LEFT);
     }
 
+    /**
+     * @param labelLocation location of the property labels relative the the property editors.
+     */
     public BeanEditor(LabelLocation labelLocation) {
         this.labelLocation = labelLocation;
     }
@@ -190,9 +197,6 @@ public class BeanEditor extends FlowWidgetBase {
     }
 
     private void alignLabels() {
-        System.out.println("BeanEditor.alignLabels");
-        System.out.println("lastMaxLabelWidth = " + lastMaxLabelWidth);
-
         // Calculate maximum label width
         float maxNameLabelWidth = -1;
         for (PropertyEditor propertyEditor : propertyEditors.values()) {
@@ -202,19 +206,15 @@ public class BeanEditor extends FlowWidgetBase {
             }
         }
 
-        System.out.println("maxNameLabelWidth = " + maxNameLabelWidth);
-
         // If the maximum label width changed, update all property editor label widths to align them
         if (maxNameLabelWidth != lastMaxLabelWidth) {
             lastMaxLabelWidth = maxNameLabelWidth;
-
-            System.out.println("realigning, max width " + lastMaxLabelWidth);
 
             for (PropertyEditor propertyEditor : propertyEditors.values()) {
                 propertyEditor.setNameLabelWidth(maxNameLabelWidth);
             }
 
-            // Relayout as needed
+            // Re-layout as needed
             beanTable.layout();
         }
 
