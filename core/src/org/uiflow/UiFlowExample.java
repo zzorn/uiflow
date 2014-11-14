@@ -17,6 +17,7 @@ import org.uiflow.propertyeditor.model.Property;
 import org.uiflow.propertyeditor.model.dynamic.DynamicBean;
 import org.uiflow.propertyeditor.model.dynamic.DynamicProperty;
 import org.uiflow.propertyeditor.ui.BeanEditor;
+import org.uiflow.propertyeditor.ui.LabelLocation;
 import org.uiflow.propertyeditor.ui.editors.TextLineEditor;
 
 public class UiFlowExample extends ApplicationAdapter {
@@ -41,7 +42,7 @@ public class UiFlowExample extends ApplicationAdapter {
 
         // Create UI elements
         final Bean testBean = createTestBean();
-        BeanEditor beanEditor = new BeanEditor();
+        BeanEditor beanEditor = new BeanEditor(LabelLocation.ABOVE);
         beanEditor.setBean(testBean);
         rootTable.add(beanEditor.getUi(uiContext));
 

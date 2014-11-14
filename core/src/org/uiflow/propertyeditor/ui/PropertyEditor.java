@@ -3,6 +3,7 @@ package org.uiflow.propertyeditor.ui;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
@@ -19,8 +20,10 @@ public class PropertyEditor extends FlowWidgetBase {
 
     private Property property;
     private Label nameLabel;
+    private Container<Label> labelContainer;
     private Table table;
     private ValueEditor valueEditor;
+    private final LabelLocation labelLocation;
 
     private ValueEditorListener valueEditorListener = new ValueEditorListener() {
         @Override public void onValueEdited(ValueEditor valueEditor, Object currentValue) {
@@ -48,12 +51,18 @@ public class PropertyEditor extends FlowWidgetBase {
         }
     };
     private Cell nameLabelCell;
+    private Container<Actor> valueEditorContainer;
 
     public PropertyEditor() {
         this(null);
     }
 
     public PropertyEditor(Property property) {
+        this(property, LabelLocation.LEFT);
+    }
+
+    public PropertyEditor(Property property, LabelLocation labelLocation) {
+        this.labelLocation = labelLocation;
         setProperty(property);
     }
 
@@ -78,26 +87,57 @@ public class PropertyEditor extends FlowWidgetBase {
     }
 
     @Override protected Actor createUi(UiContext uiContext) {
+        // Create root table for the property editor
         table = new Table(uiContext.getSkin());
+        table.pad(getUiContext().getGap() / 2);
 
+        // Create label and a container for it, to allow resizing
         nameLabel = new Label("", uiContext.getSkin());
-        nameLabel.setAlignment(Align.right);
-        nameLabelCell = table.add(nameLabel);
-        nameLabelCell.expandX();
-        nameLabelCell.space(getUiContext().getGap());
+        labelContainer = new Container<Label>(nameLabel);
+        labelContainer.pad(getUiContext().getSmallGap());
 
+        // Create container for the value editor UI
+        valueEditorContainer = new Container<Actor>();
+        //valueEditorContainer.pad(spacing);
+
+        // Arrange label and value editor in correct configuration
+        switch (labelLocation) {
+            case ABOVE:
+                table.add(labelContainer).expandX().left();
+                table.row();
+                table.add(valueEditorContainer).expand();
+                nameLabel.setAlignment(Align.left);
+                break;
+            case LEFT:
+                table.add(labelContainer).expandX().right().padRight(getUiContext().getGap());
+                table.add(valueEditorContainer).expand();
+                nameLabel.setAlignment(Align.right);
+                break;
+            case UNDER:
+                table.add(valueEditorContainer).expand();
+                table.row();
+                table.add(labelContainer).expandX().left();
+                nameLabel.setAlignment(Align.left);
+                break;
+            case NONE:
+                table.add(valueEditorContainer);
+                break;
+        }
+
+        // Create the value editor UI
         buildValueEditor();
 
+        // Update the UI with the current value of the property
         updateUi();
 
         return table;
     }
 
     public void setNameLabelWidth(float width) {
-        if (nameLabelCell == null) throw new IllegalStateException("Name label not yet initialized for this property, can not call setNameLabelWidth");
+        if (labelContainer == null) throw new IllegalStateException("Name label not yet initialized for this property, can not call setNameLabelWidth");
 
-        nameLabelCell.width(width).right();
-        nameLabel.layout();
+        labelContainer.width(width).right();
+        labelContainer.layout();
     }
 
     public float getNameLabelWidth() {
@@ -110,7 +150,7 @@ public class PropertyEditor extends FlowWidgetBase {
         // Remove old if present
         if (valueEditor != null && valueEditor.isUiCreated()) {
             valueEditor.removeListener(valueEditorListener);
-            table.removeActor(valueEditor.getUi(getUiContext()));
+            valueEditorContainer.removeActor(valueEditor.getUi(getUiContext()));
             valueEditor.dispose();
         }
 
@@ -126,7 +166,7 @@ public class PropertyEditor extends FlowWidgetBase {
             }
 
             valueEditor.addListener(valueEditorListener);
-            table.add(valueEditor.getUi(getUiContext())).right();
+            valueEditorContainer.setActor(valueEditor.getUi(getUiContext()));
         }
 
     }
@@ -134,8 +174,11 @@ public class PropertyEditor extends FlowWidgetBase {
     private void updateUi() {
         if (isUiCreated()) {
             // Update name
-            final String name = property != null ? property.getName() : "";
-            nameLabel.setText(name + ":");
+            String name = property != null ? property.getName() : "";
+
+            if (labelLocation == LabelLocation.LEFT) name += ":";
+
+            nameLabel.setText(name);
 
             // Update edited value
             if (property != null && valueEditor != null) valueEditor.setEditedValue(property.getValue());

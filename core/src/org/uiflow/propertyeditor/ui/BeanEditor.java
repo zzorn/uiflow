@@ -21,8 +21,10 @@ public class BeanEditor extends FlowWidgetBase {
     private Bean bean;
     private Table beanTable;
     private VerticalGroup propertyList;
+    private final LabelLocation labelLocation;
 
-    private float lastMaxLabelWidth = 0;
+    private transient float lastMaxLabelWidth = 0;
+
 
     private final BeanListener beanListener = new BeanListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
@@ -49,6 +51,14 @@ public class BeanEditor extends FlowWidgetBase {
         }
     };
     private Label nameLabel;
+
+    public BeanEditor() {
+        this(LabelLocation.LEFT);
+    }
+
+    public BeanEditor(LabelLocation labelLocation) {
+        this.labelLocation = labelLocation;
+    }
 
     public Bean getBean() {
         return bean;
@@ -166,7 +176,7 @@ public class BeanEditor extends FlowWidgetBase {
     private void addPropertyUi(Property property) {
         if (isUiCreated()) {
             // Create editor
-            final PropertyEditor propertyEditor = new PropertyEditor(property);
+            final PropertyEditor propertyEditor = new PropertyEditor(property, labelLocation);
 
             // Add to lookup map
             propertyEditors.put(property, propertyEditor);
