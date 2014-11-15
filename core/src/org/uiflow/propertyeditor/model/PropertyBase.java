@@ -12,7 +12,7 @@ public abstract class PropertyBase implements Property {
 
     private Bean bean;
     private PropertyDirection propertyDirection;
-    private Class<? extends ValueEditor> editorType;
+    private EditorConfiguration editorConfiguration;
 
     private Property source;
 
@@ -25,45 +25,45 @@ public abstract class PropertyBase implements Property {
     }
 
     /**
-     * @param editorType the type of editor to use to edit the value of this property.
+     * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      */
-    protected PropertyBase(Class<? extends ValueEditor> editorType) {
-        this(editorType, PropertyDirection.INOUT);
+    protected PropertyBase(EditorConfiguration editorConfiguration) {
+        this(editorConfiguration, PropertyDirection.INOUT);
     }
 
     /**
-     * @param editorType the type of editor to use to edit the value of this property.
+     * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      * @param propertyDirection whether this property is an input or output or both property.
      */
-    protected PropertyBase(Class<? extends ValueEditor> editorType,
+    protected PropertyBase(EditorConfiguration editorConfiguration,
                            PropertyDirection propertyDirection) {
-        this(editorType, propertyDirection, null);
+        this(editorConfiguration, propertyDirection, null);
     }
 
     /**
-     * @param editorType the type of editor to use to edit the value of this property.
+     * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      * @param propertyDirection whether this property is an input or output or both property.
      * @param bean the bean that this property belongs to, or null if not yet known.
      */
-    protected PropertyBase(Class<? extends ValueEditor> editorType,
+    protected PropertyBase(EditorConfiguration editorConfiguration,
                            PropertyDirection propertyDirection,
                            Bean bean) {
-        this(editorType, propertyDirection, bean, null);
+        this(editorConfiguration, propertyDirection, bean, null);
     }
 
 
     /**
-     * @param editorType the type of editor to use to edit the value of this property.
+     * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      * @param propertyDirection whether this property is an input or output or both property.
      * @param bean the bean that this property belongs to, or null if not yet known.
      * @param source the property to use as source for this property, or null to not use any source.
      */
-    protected PropertyBase(Class<? extends ValueEditor> editorType,
+    protected PropertyBase(EditorConfiguration editorConfiguration,
                            PropertyDirection propertyDirection,
                            Bean bean,
                            Property source) {
         this.bean = bean;
-        this.editorType = editorType;
+        this.editorConfiguration = editorConfiguration;
 
         setPropertyDirection(propertyDirection);
         if (source != null) setSource(source);
@@ -93,6 +93,15 @@ public abstract class PropertyBase implements Property {
         return propertyDirection;
     }
 
+    @Override public EditorConfiguration getEditorConfiguration() {
+        return editorConfiguration;
+    }
+
+    @Override public void setEditorConfiguration(EditorConfiguration editorConfiguration) {
+        this.editorConfiguration = editorConfiguration;
+        notifyValueEditorChanged();
+    }
+
     /**
      * Whether this is an input or output or inout property.
      */
@@ -101,18 +110,6 @@ public abstract class PropertyBase implements Property {
 
         this.propertyDirection = propertyDirection;
         notifyPropertyChanged();
-    }
-
-    @Override public Class<? extends ValueEditor> getEditorType() {
-        return editorType;
-    }
-
-    /**
-     * @param editorType the type of editor to use when editing this property.
-     */
-    protected void setEditorType(Class<? extends ValueEditor> editorType) {
-        this.editorType = editorType;
-        notifyValueEditorChanged();
     }
 
     @Override public final Property getSource() {
@@ -204,6 +201,7 @@ public abstract class PropertyBase implements Property {
             listener.onPropertyChanged(bean, this);
         }
     }
+
 
     protected final void notifyValueEditorChanged() {
         for (PropertyListener listener : listeners) {

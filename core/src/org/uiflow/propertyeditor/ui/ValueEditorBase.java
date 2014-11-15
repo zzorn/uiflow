@@ -2,6 +2,7 @@ package org.uiflow.propertyeditor.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import org.uiflow.UiContext;
+import org.uiflow.propertyeditor.model.EditorConfiguration;
 import org.uiflow.widgets.FlowWidgetBase;
 
 import java.util.ArrayList;
@@ -10,13 +11,25 @@ import java.util.List;
 /**
  * Common functionality for ValueEditors.
  */
-public abstract class ValueEditorBase extends FlowWidgetBase implements ValueEditor {
+public abstract class ValueEditorBase<T extends EditorConfiguration> extends FlowWidgetBase implements ValueEditor<T> {
 
     private boolean enabled = true;
     private List<ValueEditorListener> listeners = new ArrayList<ValueEditorListener>(4);
     private Object editedValue;
 
     private transient boolean sendingEditUpdate = false;
+    private T configuration;
+
+    @Override public final void configure(T configuration) {
+        if (this.configuration != null) throw new IllegalStateException("The value editor '"+this+"' has already been configured!");
+        if (configuration == null) throw new IllegalStateException("The configuration can not be null");
+
+        this.configuration = configuration;
+    }
+
+    public final T getConfiguration() {
+        return configuration;
+    }
 
     @Override public final Object getEditedValue() {
         return editedValue;
@@ -38,24 +51,32 @@ public abstract class ValueEditorBase extends FlowWidgetBase implements ValueEdi
     @Override public final void setEnabled(boolean enabled) {
         this.enabled = enabled;
         if (isUiCreated()) {
-            doSetEnabled(enabled);
+            setDisabled(!enabled);
         }
     }
 
     @Override protected final Actor createUi(UiContext uiContext) {
-        final Actor editor = createEditor(uiContext);
+        // Check configuration
+        if (configuration == null) {
+            throw new IllegalStateException("No configuration has been provided for the value editor " + this);
+        }
+
+        // Create editor UI
+        final Actor editor = createEditor(configuration, uiContext);
 
         // Update value and state
         updateEditedValue(editedValue);
-        if (!enabled) doSetEnabled(false);
+        if (!enabled) setDisabled(true);
 
         return editor;
     }
 
     /**
+     * @param configuration editor specific configuration class with things such as value ranges.
+     * @param uiContext context class with things such as the skin used and other settings.
      * @return editor UI.
      */
-    protected abstract Actor createEditor(UiContext uiContext);
+    protected abstract Actor createEditor(T configuration, UiContext uiContext);
 
     /**
      * Should be called when the value is changed in the UI.
@@ -75,9 +96,9 @@ public abstract class ValueEditorBase extends FlowWidgetBase implements ValueEdi
     protected abstract void updateEditedValue(Object value);
 
     /**
-     * Called when the enabled state of the editor is changed.
+     * Called when the disabled/enabled state of the editor is changed.
      */
-    protected abstract void doSetEnabled(boolean enabled);
+    protected abstract void setDisabled(boolean disabled);
 
     @Override public final void addListener(ValueEditorListener listener) {
         if (listener == null) throw new IllegalArgumentException("Listener should not be null");

@@ -31,9 +31,16 @@ public interface Property {
     PropertyDirection getDirection();
 
     /**
-     * @return the type of editor to use to edit this property, or null if it is not editable or viewable.
+     * @return the type of editor to use to edit this property and the configuration for it,
+     * or null if it is not editable or viewable.
      */
-    Class<? extends ValueEditor> getEditorType();
+    EditorConfiguration getEditorConfiguration();
+
+    /**
+     * @param editorConfiguration the type of editor to use to edit this property and the configuration for it,
+     *                            or null if it is not editable or viewable.
+     */
+    void setEditorConfiguration(EditorConfiguration editorConfiguration);
 
     /**
      * @return current value of this property, regardless of whether a source is specified.

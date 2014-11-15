@@ -1,11 +1,18 @@
 package org.uiflow.propertyeditor.ui;
 
+import org.uiflow.propertyeditor.model.EditorConfiguration;
 import org.uiflow.widgets.FlowWidget;
 
 /**
  * Interface for various types of editors of property values.
  */
-public interface ValueEditor extends FlowWidget {
+public interface ValueEditor<T extends EditorConfiguration> extends FlowWidget {
+
+    /**
+     * This will be called before the UI is created, to configure the ValueEditor.
+     * @param editorInfo information class to be used for configuring the value editor, contains allowed value ranges, etc.
+     */
+    void configure(T editorInfo);
 
     /**
      * @return the current value in the editor.

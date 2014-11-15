@@ -18,10 +18,12 @@ public class PropertyEditor extends FlowWidgetBase {
 
     private Property property;
     private Label nameLabel;
-    private Container<Label> labelContainer;
     private Table table;
     private ValueEditor valueEditor;
     private final LabelLocation labelLocation;
+    private Container<Label> labelContainer;
+    private Container<Actor> valueEditorContainer;
+
 
     private ValueEditorListener valueEditorListener = new ValueEditorListener() {
         @Override public void onValueEdited(ValueEditor valueEditor, Object currentValue) {
@@ -30,8 +32,6 @@ public class PropertyEditor extends FlowWidgetBase {
             }
         }
     };
-
-
     private final PropertyListener propertyListener = new PropertyListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
             if (valueEditor != null) {
@@ -48,7 +48,6 @@ public class PropertyEditor extends FlowWidgetBase {
             updateUi();
         }
     };
-    private Container<Actor> valueEditorContainer;
 
     /**
      */
@@ -166,7 +165,7 @@ public class PropertyEditor extends FlowWidgetBase {
         else {
             // Create instance
             try {
-                valueEditor = property.getEditorType().newInstance();
+                valueEditor = property.getEditorConfiguration().createEditor();
             } catch (Exception e) {
                 throw new IllegalStateException("Could not create editor for property " + property, e);
             }

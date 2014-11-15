@@ -16,9 +16,10 @@ import org.uiflow.propertyeditor.model.BeanListener;
 import org.uiflow.propertyeditor.model.Property;
 import org.uiflow.propertyeditor.model.dynamic.DynamicBean;
 import org.uiflow.propertyeditor.model.dynamic.DynamicProperty;
+import org.uiflow.propertyeditor.model.editorconfigurations.NumberEditorConfiguration;
+import org.uiflow.propertyeditor.model.editorconfigurations.TextEditorConfiguration;
 import org.uiflow.propertyeditor.ui.BeanEditor;
 import org.uiflow.propertyeditor.ui.LabelLocation;
-import org.uiflow.propertyeditor.ui.editors.TextLineEditor;
 
 public class UiFlowExample extends ApplicationAdapter {
 
@@ -76,9 +77,11 @@ public class UiFlowExample extends ApplicationAdapter {
 
     private Bean createTestBean() {
         final DynamicBean testBean = new DynamicBean("Troll");
-        testBean.addProperty(new DynamicProperty("Name", "Igor", TextLineEditor.class));
-        testBean.addProperty(new DynamicProperty("Hitpoints", 13, TextLineEditor.class));
-        testBean.addProperty(new DynamicProperty("Favourite Food", "Tasty Hobbitses", TextLineEditor.class));
+        testBean.addProperty(new DynamicProperty("Name", TextEditorConfiguration.DEFAULT, "Igor"));
+        testBean.addProperty(new DynamicProperty("Hitpoints", NumberEditorConfiguration.DOUBLE_DEFAULT, 13));
+        testBean.addProperty(new DynamicProperty("Favourite Food",
+                                                 TextEditorConfiguration.DEFAULT_MULTILINE,
+                                                 "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs"));
 
         return testBean;
     }

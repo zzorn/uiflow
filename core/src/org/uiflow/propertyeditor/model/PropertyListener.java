@@ -11,7 +11,7 @@ public interface PropertyListener {
     void onValueChanged(Bean bean, Property property, Object newValue);
 
     /**
-     * Called if the value editor for the property changed.
+     * Called if the value editor configuration for the property changed.
      */
     void onValueEditorChanged(Bean bean, Property property);
 
