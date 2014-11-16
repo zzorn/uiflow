@@ -20,6 +20,9 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
     private static final int SCALE_TO_N_SIGNIFICANT_NUMBERS = 3;
     private static final double SCALE_FACTOR = 1.5;
 
+    /**
+     * Accepts characters that appear in integers or floating point numbers.
+     */
     private static final TextField.TextFieldFilter NUMBER_FILTER = new TextField.TextFieldFilter() {
         @Override public boolean acceptChar(TextField textField, char c) {
             return Character.isDigit(c) ||
@@ -61,6 +64,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
             return true;
         }
     };
+    private Slider slider;
 
     @Override protected Actor createEditor(final NumberEditorConfiguration configuration, final UiContext uiContext) {
         table = new Table(uiContext.getSkin());
@@ -76,11 +80,24 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         Container<TextField> numberFieldContainer = new Container<TextField>(numberField);
         numberField.setTextFieldFilter(NUMBER_FILTER);
         numberField.setRightAligned(true);
+        numberField.addListener(scrollWheelListener);
 
         // Set number field width
         final float digitWidth = numberField.getStyle().font.getBounds("0").width;
         final float width = digitWidth * (configuration.getNumberOfDigitsToShow() + 2);
         numberFieldContainer.width(width);
+
+        // Create slider
+        // TODO: Create custom component that:
+        // TODO: * Has a drawable for positive selected area, negative selected area, positive unselected area, negative unselected area, and position indicator
+        // TODO:   * Should support updating the drawables depending on the current value, or just in update call
+        // TODO:   * Should support color functions to calculate the color for the drawables depending on the current value (and preferred default color)
+        // TODO: * Should cover whole widget area (or drawable area), and have a flexible width, and configurable / flexible height
+        // TODO: * Should support a logarithmic scale with arbitrary exponent and centered value and min/max visible values
+        // TODO: * Should support mouse wheel adjustment
+        // TODO: * Should support listening to changes in value
+        slider = new Slider(0, 1, 0.001f, false, uiContext.getSkin());
+        slider.addListener(scrollWheelListener);
 
         // Arrange components in the ui
         table.add(tuneDownButton);
@@ -88,13 +105,9 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         table.add(numberFieldContainer).expandX();
         table.add(incrementButton);
         table.add(tuneUpButton);
-
-        // Listen to mouse wheel adjustment
-        numberField.addListener(scrollWheelListener);
+        table.add(slider).expandX().padLeft(uiContext.getSmallGap());
 
 
-        // Add slider
-        // TODO
 
 
         numberField.addListener(new TextFieldChangeListener() {
@@ -166,7 +179,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
                     // Trigger value change
                     if (scale) {
-                        scaleValue(scaling, true, SCALE_TO_N_SIGNIFICANT_NUMBERS);
+                        scaleValue(scaling, true, SCALE_TO_N_SIGNIFICANT_NUMBERS, true);
                     }
                     else {
                         changeValue(change);
@@ -190,7 +203,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                 if (buttonNum == MOUSE_BUTTON_FOR_ARROW_BUTTONS) {
 
                     if (scale) {
-                        scaleValue(scaleFactor, true, SCALE_TO_N_SIGNIFICANT_NUMBERS);
+                        scaleValue(scaleFactor, true, SCALE_TO_N_SIGNIFICANT_NUMBERS, true);
                     }
                     else {
                         changeValue(changeDelta);
@@ -252,8 +265,13 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
     /**
      * Scale the edited value by some factor.
+     *
+     * @param scaling
+     * @param invertScalingForNegativeValues
+     * @param roundToNSignificantNumbers
+     * @param forceChange if the change factor would be too small to create a change, force a change by one.
      */
-    protected final void scaleValue(double scaling, boolean invertScalingForNegativeValues, int roundToNSignificantNumbers) {
+    protected final void scaleValue(double scaling, boolean invertScalingForNegativeValues, int roundToNSignificantNumbers, boolean forceChange) {
         if (scaling != 1) {
             final Number editedValue = (Number) getEditedValue();
             System.out.println("editedValue = " + editedValue);
@@ -263,14 +281,23 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                 final Class<? extends Number> numberType = getConfiguration().getNumberType();
 
                 // Invert scaling for negative values if requested
+                double nonInvertedScaling = scaling;
                 if (invertScalingForNegativeValues && editedValue.doubleValue() < 0 && scaling != 0) {
                     scaling = 1.0 / scaling;
                 }
 
                 // Round result to remove excessive decimals
-                final double resultAsDouble = MathUtils.roundToNDigits(scaling * editedValue.doubleValue(), roundToNSignificantNumbers);
+                double resultAsDouble = MathUtils.roundToNDigits(scaling * editedValue.doubleValue(), roundToNSignificantNumbers);
                 System.out.println("resultAsDouble = " + resultAsDouble);
 
+                // Check if we should move at least one, to avoid getting stuck on a low integer value when scaling
+                if (forceChange && isIntegerType(numberType) && editedValue.longValue() == (long)resultAsDouble) {
+                    // Force a change by at least one
+                    if (nonInvertedScaling >= 1) resultAsDouble += 1;
+                    else resultAsDouble -= 1;
+                }
+
+                // Convert to actual number type being edited
                 if (numberType.equals(Byte.class))         result = (byte) resultAsDouble;
                 else if (numberType.equals(Short.class))   result = (short) resultAsDouble;
                 else if (numberType.equals(Integer.class)) result = (int) resultAsDouble;
@@ -286,6 +313,13 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                 notifyValueEdited(result);
             }
         }
+    }
+
+    private boolean isIntegerType(Class<? extends Number> numberType) {
+        return numberType == Byte.class ||
+               numberType == Short.class ||
+               numberType == Integer.class ||
+               numberType == Long.class;
     }
 
     @Override protected void updateEditedValue(Object value) {
