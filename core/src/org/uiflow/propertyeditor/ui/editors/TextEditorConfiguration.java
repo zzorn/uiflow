@@ -1,7 +1,6 @@
-package org.uiflow.propertyeditor.model.editorconfigurations;
+package org.uiflow.propertyeditor.ui.editors;
 
 import org.uiflow.propertyeditor.model.EditorConfigurationBase;
-import org.uiflow.propertyeditor.ui.editors.TextEditor;
 
 /**
  * EditorInfo for text properties.

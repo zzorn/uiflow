@@ -6,7 +6,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.model.editorconfigurations.TextEditorConfiguration;
 import org.uiflow.propertyeditor.ui.utils.TextFieldChangeListener;
 import org.uiflow.propertyeditor.ui.ValueEditorBase;
 

@@ -16,24 +16,34 @@ import org.uiflow.propertyeditor.model.BeanListener;
 import org.uiflow.propertyeditor.model.Property;
 import org.uiflow.propertyeditor.model.dynamic.DynamicBean;
 import org.uiflow.propertyeditor.model.dynamic.DynamicProperty;
-import org.uiflow.propertyeditor.model.editorconfigurations.NumberEditorConfiguration;
-import org.uiflow.propertyeditor.model.editorconfigurations.TextEditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.NumberEditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.TextEditorConfiguration;
 import org.uiflow.propertyeditor.ui.BeanEditor;
 import org.uiflow.propertyeditor.ui.LabelLocation;
 
 public class UiFlowExample extends ApplicationAdapter {
 
     private Stage stage;
-    private Skin skin;
     private UiContext uiContext;
 
     @Override
 	public void create () {
         // Setup
         stage = new Stage();
+
+        /*
+        stage.addListener(new EventListener() {
+            @Override public boolean handle(Event event) {
+                System.out.println("UiFlowExample.handle");
+                System.out.println("event = " + event);
+                return false;
+            }
+        });
+        */
+
         // skin = createTestSkin();
         Gdx.input.setInputProcessor(stage);
-        uiContext = new DefaultUiContext();
+        uiContext = new DefaultUiContext(stage);
 
         // Create root table
         Table rootTable = new Table();
@@ -78,7 +88,8 @@ public class UiFlowExample extends ApplicationAdapter {
     private Bean createTestBean() {
         final DynamicBean testBean = new DynamicBean("Troll");
         testBean.addProperty(new DynamicProperty("Name", TextEditorConfiguration.DEFAULT, "Igor"));
-        testBean.addProperty(new DynamicProperty("Hitpoints", NumberEditorConfiguration.DOUBLE_DEFAULT, 13));
+        testBean.addProperty(new DynamicProperty("Hitpoints", NumberEditorConfiguration.DOUBLE_DEFAULT, 24.0));
+        testBean.addProperty(new DynamicProperty("Inventory Slots", NumberEditorConfiguration.INTEGER_DEFAULT, 16));
         testBean.addProperty(new DynamicProperty("Favourite Food",
                                                  TextEditorConfiguration.DEFAULT_MULTILINE,
                                                  "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs"));

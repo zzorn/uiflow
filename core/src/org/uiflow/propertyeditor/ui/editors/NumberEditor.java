@@ -1,26 +1,101 @@
 package org.uiflow.propertyeditor.ui.editors;
 
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.Input;
+import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.model.editorconfigurations.NumberEditorConfiguration;
 import org.uiflow.propertyeditor.ui.utils.TextFieldChangeListener;
 import org.uiflow.propertyeditor.ui.ValueEditorBase;
+import org.uiflow.utils.MathUtils;
+
+import java.text.DecimalFormat;
 
 /**
  *
  */
 public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
-    private TextField numberField;
+    private static final int MOUSE_BUTTON_FOR_ARROW_BUTTONS = Input.Buttons.LEFT;
+    private static final float MIN_TICK_DELAY = 0.005f;
+    private static final int SCALE_TO_N_SIGNIFICANT_NUMBERS = 3;
+    private static final double SCALE_FACTOR = 1.5;
 
+    private static final TextField.TextFieldFilter NUMBER_FILTER = new TextField.TextFieldFilter() {
+        @Override public boolean acceptChar(TextField textField, char c) {
+            return Character.isDigit(c) ||
+                   c == '+' ||
+                   c == '-' ||
+                   c == '.' ||
+                   c == 'E' ||
+                   c == 'e';
+        }
+    };
+
+    private Table table;
+    private TextField numberField;
     private boolean errorStyle = false;
 
-    @Override protected Actor createEditor(final NumberEditorConfiguration configuration, final UiContext uiContext) {
-        numberField = new TextField("", uiContext.getSkin());
+    private TextButton decrementButton;
+    private TextButton incrementButton;
+    private TextButton tuneUpButton;
+    private TextButton tuneDownButton;
 
-        //numberField.setTextFieldFilter(new TextField.TextFieldFilter.DigitsOnlyFilter());
+    private DecimalFormat decimalFormat = new DecimalFormat("0.0########");
+
+    private final InputListener scrollWheelListener = new InputListener() {
+
+        @Override public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+            // Tell the stage that yes, we do want to receive scroll events (why can't it send them by default?)...
+            getUiContext().getStage().setScrollFocus(event.getTarget());
+        }
+
+        @Override public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+            // Don't receive scroll events when cursor outside component
+            getUiContext().getStage().setScrollFocus(null);
+        }
+
+        @Override public boolean scrolled(InputEvent event, float x, float y, int amount) {
+            if (amount != 0) {
+                changeValue(-amount);
+            }
+            return true;
+        }
+    };
+
+    @Override protected Actor createEditor(final NumberEditorConfiguration configuration, final UiContext uiContext) {
+        table = new Table(uiContext.getSkin());
+
+        // Create increment, decrement, and adjust buttons
+        incrementButton = createChangeButton(uiContext, "+", 1, false, 1, true);
+        decrementButton = createChangeButton(uiContext, "-", -1, false, 1, true);
+        tuneUpButton    = createChangeButton(uiContext, "++", 0, true, SCALE_FACTOR, false);
+        tuneDownButton  = createChangeButton(uiContext, "--", 0, true, 1 / SCALE_FACTOR, false);
+
+        // Create number field
+        numberField = new TextField("", uiContext.getSkin());
+        Container<TextField> numberFieldContainer = new Container<TextField>(numberField);
+        numberField.setTextFieldFilter(NUMBER_FILTER);
+        numberField.setRightAligned(true);
+
+        // Set number field width
+        final float digitWidth = numberField.getStyle().font.getBounds("0").width;
+        final float width = digitWidth * (configuration.getNumberOfDigitsToShow() + 2);
+        numberFieldContainer.width(width);
+
+        // Arrange components in the ui
+        table.add(tuneDownButton);
+        table.add(decrementButton);
+        table.add(numberFieldContainer).expandX();
+        table.add(incrementButton);
+        table.add(tuneUpButton);
+
+        // Listen to mouse wheel adjustment
+        numberField.addListener(scrollWheelListener);
+
+
+        // Add slider
+        // TODO
+
 
         numberField.addListener(new TextFieldChangeListener() {
             @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
@@ -33,11 +108,198 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
             }
         });
 
-        return numberField;
+        return table;
+    }
+
+    private TextButton createChangeButton(UiContext uiContext,
+                                          String label,
+                                          final double changeDelta,
+                                          final boolean scale,
+                                          final double scaleFactor,
+                                          final boolean enableAcceleration) {
+
+        // Create button
+        final TextButton button = new TextButton(label, uiContext.getSkin());
+
+        // Listen to scrolling
+        button.addListener(scrollWheelListener);
+
+        // Action used to produce value changes while the button is held down
+        final Action continuousPressAction = new Action() {
+            private float slowdownFactorForScalingButton = scale ? 2 : 1;
+            private float tickDelay =  (float) getConfiguration().getTimeBetweenValueUpdatesWhenArrowPressed_seconds() * slowdownFactorForScalingButton ;
+            private float timeUntilNextTick = (float) getConfiguration().getInitialDelayWhenArrowPressed_seconds() * slowdownFactorForScalingButton ;
+
+            @Override public void reset() {
+                super.reset();
+
+                // Reset initial time
+                timeUntilNextTick = (float) getConfiguration().getInitialDelayWhenArrowPressed_seconds() * slowdownFactorForScalingButton;
+
+                // Reset acceleration
+                tickDelay =  (float) getConfiguration().getTimeBetweenValueUpdatesWhenArrowPressed_seconds() * slowdownFactorForScalingButton;
+            }
+
+            @Override public boolean act(float delta) {
+                final boolean isPressed = button.isPressed();
+
+                if (isPressed) {
+                    timeUntilNextTick -= delta;
+
+                    // Handle zero or more change ticks
+                    double change = 0;
+                    double scaling = 1;
+                    while (timeUntilNextTick <= 0) {
+                        // Determine time until next fire
+                        timeUntilNextTick += tickDelay;
+
+                        // Keep track of total change
+                        change += changeDelta;
+                        scaling *= scaleFactor;
+
+                        // Accelerate scrolling
+                        if (enableAcceleration) {
+                            tickDelay /= getConfiguration().getScrollAcceleration_per_tick();
+                            if (tickDelay < MIN_TICK_DELAY) tickDelay = MIN_TICK_DELAY;
+                        }
+                    }
+
+                    // Trigger value change
+                    if (scale) {
+                        scaleValue(scaling, true, SCALE_TO_N_SIGNIFICANT_NUMBERS);
+                    }
+                    else {
+                        changeValue(change);
+                    }
+
+                    // Continue action
+                    return false;
+                }
+                else {
+                    // End action
+                    return true;
+                }
+            }
+
+
+        };
+
+        // When clicked, increase or decrease the editor value
+        button.addListener(new InputListener() {
+            @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int buttonNum) {
+                if (buttonNum == MOUSE_BUTTON_FOR_ARROW_BUTTONS) {
+
+                    if (scale) {
+                        scaleValue(scaleFactor, true, SCALE_TO_N_SIGNIFICANT_NUMBERS);
+                    }
+                    else {
+                        changeValue(changeDelta);
+                    }
+
+                    continuousPressAction.reset();
+                    button.addAction(continuousPressAction);
+                    return false;
+                }
+                else {
+                    return false;
+                }
+
+            }
+
+            @Override public void touchUp(InputEvent event, float x, float y, int pointer, int buttonNum) {
+                if (buttonNum == MOUSE_BUTTON_FOR_ARROW_BUTTONS) {
+                    button.removeAction(continuousPressAction);
+                }
+            }
+
+            @Override public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                button.removeAction(continuousPressAction);
+            }
+
+
+        });
+
+        return button;
+    }
+
+    /**
+     * Adds some delta to the edited value.
+     */
+    protected final void changeValue(Number delta) {
+        if (delta.doubleValue() != 0) {
+            final Number editedValue = (Number) getEditedValue();
+            if (editedValue != null) {
+                Number result;
+
+                final Class<? extends Number> numberType = getConfiguration().getNumberType();
+
+                if (numberType.equals(Byte.class))         result = delta.byteValue()   + editedValue.byteValue();
+                else if (numberType.equals(Short.class))   result = delta.shortValue()  + editedValue.shortValue();
+                else if (numberType.equals(Integer.class)) result = delta.intValue()    + editedValue.intValue();
+                else if (numberType.equals(Long.class))    result = delta.longValue()   + editedValue.longValue();
+                else if (numberType.equals(Float.class))   result = delta.floatValue()  + editedValue.floatValue();
+                else if (numberType.equals(Double.class))  result = delta.doubleValue() + editedValue.doubleValue();
+                else throw new IllegalStateException("Unsupported number type in number field: " + numberType);
+
+                // Update the rest of the UI
+                updateEditedValue(result);
+
+                // Notify listeners
+                notifyValueEdited(result);
+            }
+        }
+    }
+
+    /**
+     * Scale the edited value by some factor.
+     */
+    protected final void scaleValue(double scaling, boolean invertScalingForNegativeValues, int roundToNSignificantNumbers) {
+        if (scaling != 1) {
+            final Number editedValue = (Number) getEditedValue();
+            System.out.println("editedValue = " + editedValue);
+            if (editedValue != null) {
+                Number result;
+
+                final Class<? extends Number> numberType = getConfiguration().getNumberType();
+
+                // Invert scaling for negative values if requested
+                if (invertScalingForNegativeValues && editedValue.doubleValue() < 0 && scaling != 0) {
+                    scaling = 1.0 / scaling;
+                }
+
+                // Round result to remove excessive decimals
+                final double resultAsDouble = MathUtils.roundToNDigits(scaling * editedValue.doubleValue(), roundToNSignificantNumbers);
+                System.out.println("resultAsDouble = " + resultAsDouble);
+
+                if (numberType.equals(Byte.class))         result = (byte) resultAsDouble;
+                else if (numberType.equals(Short.class))   result = (short) resultAsDouble;
+                else if (numberType.equals(Integer.class)) result = (int) resultAsDouble;
+                else if (numberType.equals(Long.class))    result = (long) resultAsDouble;
+                else if (numberType.equals(Float.class))   result = (float)(resultAsDouble);
+                else if (numberType.equals(Double.class))  result = resultAsDouble;
+                else throw new IllegalStateException("Unsupported number type in number field: " + numberType);
+
+                // Update the rest of the UI
+                updateEditedValue(result);
+
+                // Notify listeners
+                notifyValueEdited(result);
+            }
+        }
     }
 
     @Override protected void updateEditedValue(Object value) {
-        numberField.setText("" + value);
+        final String valueAsText;
+        if (value instanceof Double ||
+            value instanceof Float ) {
+            // Strip small rounding errors
+            valueAsText = decimalFormat.format(value);
+        }
+        else {
+            valueAsText = "" + value;
+        }
+
+        numberField.setText(valueAsText);
     }
 
     @Override protected void setDisabled(boolean disabled) {

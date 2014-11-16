@@ -1,6 +1,7 @@
 package org.uiflow;
 
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 /**
@@ -38,4 +39,9 @@ public interface UiContext {
      * Disposes any loaded skins, textures, and other files.
      */
     void dispose();
+
+    /**
+     * @return the Stage that contains and handles the UI.
+     */
+    Stage getStage();
 }

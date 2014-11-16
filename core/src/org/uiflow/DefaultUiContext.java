@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 /**
@@ -32,53 +33,60 @@ public class DefaultUiContext implements UiContext {
     private final Skin skin;
     private final TextureAtlas textureAtlas;
     private final float gapSize;
+    private final Stage stage;
 
     /**
      * Uses the default skin and a font height depending on the height of the screen, and no custom textureAtlas.
+     * @param stage the stage that handles the UI.
      */
-    public DefaultUiContext() {
-        this(null);
+    public DefaultUiContext(Stage stage) {
+        this(stage, null);
     }
 
     /**
      * Uses the default skin and a font height depending on the height of the screen, and the user provided textureAtlas for addition UI graphic elements.
      *
+     * @param stage the stage that handles the UI.
      * @param textureAtlas texture atlas used to load icons and such for the UI.  Can be null if no custom UI graphics is accessed through UiContext.
      */
-    public DefaultUiContext(TextureAtlas textureAtlas) {
-        this(textureAtlas, calculatePixelSize(DIALOG_FONT_HEIGHT_ON_PC, MIN_DIALOG_FONT_HEIGHT_PIXELS));
+    public DefaultUiContext(Stage stage, TextureAtlas textureAtlas) {
+        this(stage, textureAtlas, calculatePixelSize(DIALOG_FONT_HEIGHT_ON_PC, MIN_DIALOG_FONT_HEIGHT_PIXELS));
     }
 
     /**
      * Uses the default skin.
      *
+     * @param stage the stage that handles the UI.
      * @param textureAtlas texture atlas used to load icons and such for the UI.  Can be null if no custom UI graphics is accessed through UiContext.
      * @param fontHeightPcPixels height of the default font, in approximately pc screen sized pixels.
      */
-    public DefaultUiContext(TextureAtlas textureAtlas, int fontHeightPcPixels) {
-        this(textureAtlas, calculatePixelSize(fontHeightPcPixels, fontHeightPcPixels), null);
+    public DefaultUiContext(Stage stage, TextureAtlas textureAtlas, int fontHeightPcPixels) {
+        this(stage, textureAtlas, calculatePixelSize(fontHeightPcPixels, fontHeightPcPixels), null);
     }
 
     /**
+     * @param stage the stage that handles the UI.
      * @param textureAtlas texture atlas used to load icons and such for the UI.  Can be null if no custom UI graphics is accessed through UiContext.
      * @param fontHeightAbsolutePixels height of the default font in absolute pixels on the current device.
      * @param skin the skin to use for the ui.  If null, the default skin is loaded.
      */
-    public DefaultUiContext(TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin) {
-        this(textureAtlas, fontHeightAbsolutePixels, skin, calculatePixelSize(GAP_PIXELS_ON_PC, MIN_GAP_SIZE));
+    public DefaultUiContext(Stage stage, TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin) {
+        this(stage, textureAtlas, fontHeightAbsolutePixels, skin, calculatePixelSize(GAP_PIXELS_ON_PC, MIN_GAP_SIZE));
     }
 
     /**
+     * @param stage the stage that handles the UI.
      * @param textureAtlas texture atlas used to load icons and such for the UI.  Can be null if no custom UI graphics is accessed through UiContext.
      * @param fontHeightAbsolutePixels height of the default font in absolute pixels on the current device.
      * @param skin the skin to use for the ui.  If null, the default skin is loaded.
      * @param gapSize size of the default medium gap to use in UI, in screeen pixels.
      */
-    public DefaultUiContext(TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin, float gapSize) {
+    public DefaultUiContext(Stage stage, TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin, float gapSize) {
         if (skin == null) {
             skin = loadDefaultSkin(fontHeightAbsolutePixels);
         }
 
+        this.stage = stage;
         this.gapSize = gapSize;
         this.skin = skin;
         this.textureAtlas = textureAtlas;
@@ -107,6 +115,10 @@ public class DefaultUiContext implements UiContext {
     @Override public void dispose() {
         if (skin != null) skin.dispose();
         if (textureAtlas != null) textureAtlas.dispose();
+    }
+
+    @Override public Stage getStage() {
+        return stage;
     }
 
 
