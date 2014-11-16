@@ -1,0 +1,46 @@
+{
+com.badlogic.gdx.graphics.Color: {
+	green: { a: 1, b: 0, g: 1, r: 0 },
+    amber: { a: 1, b: 0.6, g: 0.8, r: 1 },
+    selection_color: { a: 1, b: 0.1, g: 0.4, r: 0.9 },
+	white: { a: 1, b: 1, g: 1, r: 1 },
+	lightgrey: { a: 1, b: 0.75, g: 0.75, r: 0.75 },
+	red: { a: 1, b: 0, g: 0, r: 1 },
+	black: { a: 1, b: 0, g: 0, r: 0 }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
+	dialogDim: { name: white, color: { r: 0, g: 0, b: 0, a: 0.45 } }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
+	default: { down: convex, up: concave },
+	toggle: { down: convex, checked: convex_selected, up: concave }
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
+	default: { down: concave, up: convex, font: default-font, fontColor: white },
+	toggle: { down: concave, up: convex, checked: concave_selected, font: default-font, fontColor: white, downFontColor: black }
+},
+com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
+    default: { down: concave, up: convex},
+    toggle: { down: concave, up: convex, checked: concave_selected}
+},
+com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
+	default: { titleFont: default-font, background: panel, titleFontColor: white },
+	dialog: { titleFont: default-font, background: panel, titleFontColor: white, stageBackground: panel }
+},
+com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
+	default-horizontal: { background: concave, knob: convex_selected },
+	default-vertical: { background: concave, knob: convex_selected }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
+	default-horizontal: { background: concave, knob: convex_selected },
+	default-vertical: { background: concave, knob: convex_selected }
+},
+com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
+	default: { font: default-font, fontColor: lightgrey },
+    highlight: { font: default-font, fontColor: white, background: highlight }
+},
+com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
+	default: { selection: selection, background: textfield, font: default-font, fontColor: amber, cursor: cursor },
+	error: { selection: selection, background: textfield_error, font: default-font, fontColor: white, cursor: cursor }
+},
+}

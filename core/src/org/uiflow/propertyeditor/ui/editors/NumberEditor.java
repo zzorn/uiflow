@@ -16,7 +16,7 @@ import java.text.DecimalFormat;
 public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
     private static final int MOUSE_BUTTON_FOR_ARROW_BUTTONS = Input.Buttons.LEFT;
-    private static final float MIN_TICK_DELAY = 0.005f;
+    private static final float MIN_TICK_DELAY = 0.01f;
     private static final int SCALE_TO_N_SIGNIFICANT_NUMBERS = 3;
     private static final double SCALE_FACTOR = 1.5;
 

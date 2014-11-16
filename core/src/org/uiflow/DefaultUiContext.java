@@ -17,7 +17,7 @@ public class DefaultUiContext implements UiContext {
 
 
     private static final String FONT_DIR = "uiflow/fonts/";
-    private static final String UIFLOW_SKIN_BASE_NAME = "uiflow/skin/uiskin";
+    private static final String UIFLOW_SKIN_BASE_NAME = "uiflow/skin/uiflow";
     private static final String DIALOG_FONT_FILE = "135atom_sans";
 
     private static final int DIALOG_FONT_HEIGHT_ON_PC = 32;
