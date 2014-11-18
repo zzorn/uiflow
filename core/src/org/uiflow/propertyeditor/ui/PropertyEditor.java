@@ -110,16 +110,16 @@ public class PropertyEditor extends FlowWidgetBase {
             case ABOVE:
                 table.add(labelContainer).expandX().left();
                 table.row();
-                table.add(valueEditorContainer).expand();
+                table.add(valueEditorContainer).expand().fillX();
                 nameLabel.setAlignment(Align.left);
                 break;
             case LEFT:
                 table.add(labelContainer).expandX().right().padRight(getUiContext().getGap());
-                table.add(valueEditorContainer).expand();
+                table.add(valueEditorContainer).expand().fillX();
                 nameLabel.setAlignment(Align.right);
                 break;
             case BELOW:
-                table.add(valueEditorContainer).expand();
+                table.add(valueEditorContainer).expand().fillX();
                 table.row();
                 table.add(labelContainer).expandX().left();
                 nameLabel.setAlignment(Align.left);
@@ -172,6 +172,7 @@ public class PropertyEditor extends FlowWidgetBase {
 
             valueEditor.addListener(valueEditorListener);
             valueEditorContainer.setActor(valueEditor.getUi(getUiContext()));
+            valueEditorContainer.fillX();
         }
 
     }

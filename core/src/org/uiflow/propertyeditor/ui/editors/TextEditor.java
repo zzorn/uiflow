@@ -1,10 +1,7 @@
 package org.uiflow.propertyeditor.ui.editors;
 
 import com.badlogic.gdx.scenes.scene2d.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.TextArea;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.ui.utils.TextFieldChangeListener;
 import org.uiflow.propertyeditor.ui.ValueEditorBase;
@@ -39,7 +36,7 @@ public class TextEditor extends ValueEditorBase<TextEditorConfiguration> {
             textWidget = new TextField("", uiContext.getSkin());
         }
 
-        table.add(textWidget);
+        table.add(textWidget).expandX().fillX();
 
         /* Not working too well with mouse selection
         // When textfield is selected, select all text so that it is easy to replace existing content.

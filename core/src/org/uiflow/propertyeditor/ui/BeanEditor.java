@@ -4,6 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
+import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.BeanListener;
@@ -20,7 +21,7 @@ public class BeanEditor extends FlowWidgetBase {
     private final Map<Property, PropertyEditor> propertyEditors = new HashMap<Property, PropertyEditor>();
     private Bean bean;
     private Table beanTable;
-    private VerticalGroup propertyList;
+    private Table propertyList;
     private final LabelLocation labelLocation;
 
     private transient float lastMaxLabelWidth = 0;
@@ -89,14 +90,18 @@ public class BeanEditor extends FlowWidgetBase {
 
     @Override protected Actor createUi(UiContext uiContext) {
         beanTable = new Table(uiContext.getSkin());
+        beanTable.setBackground("window_titled");
+
 
         // Name label
         nameLabel = new Label("", uiContext.getSkin());
-        beanTable.add(nameLabel).expandX();
+        nameLabel.setStyle(uiContext.getSkin().get("window_title", Label.LabelStyle.class));
+        nameLabel.setAlignment(Align.center);
+        beanTable.add(nameLabel).expandX().fillX();
         beanTable.row();
 
         // Property list
-        propertyList = new VerticalGroup();
+        propertyList = new Table(uiContext.getSkin());
         beanTable.add(propertyList).expand().fill();
 
         updateUi();
@@ -189,7 +194,7 @@ public class BeanEditor extends FlowWidgetBase {
             propertyEditors.put(property, propertyEditor);
 
             // Add to ui
-            propertyList.addActor(propertyEditor.getUi(getUiContext()));
+            propertyList.add(propertyEditor.getUi(getUiContext())).expandX().fillX();
 
             // Update label width of all properties if needed, to align the labels
             alignLabels();

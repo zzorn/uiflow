@@ -46,7 +46,8 @@ public class UiFlowExample extends ApplicationAdapter {
         uiContext = new DefaultUiContext(stage);
 
         // Create root table
-        Table rootTable = new Table();
+        Table rootTable = new Table(uiContext.getSkin());
+        rootTable.setBackground("frame");
 
         rootTable.setFillParent(true);
         stage.addActor(rootTable);

@@ -13,14 +13,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 public class DefaultUiContext implements UiContext {
 
     public static final String DIALOG_FONT_NAME = "default-font";
-    public static final String DIALOG_LARGE_FONT_NAME = "dialog-large-font";
+    public static final String DIALOG_LARGE_FONT_NAME = "title-font";
 
 
     private static final String FONT_DIR = "uiflow/fonts/";
     private static final String UIFLOW_SKIN_BASE_NAME = "uiflow/skin/uiflow";
     private static final String DIALOG_FONT_FILE = "135atom_sans";
+    //private static final String DIALOG_FONT_FILE = "newscycle-bold";
+    private static final String FIXED_WIDTH_FONT_FILE = "Cousine-Regular-Latin";
 
-    private static final int DIALOG_FONT_HEIGHT_ON_PC = 32;
+    private static final int DIALOG_FONT_HEIGHT_ON_PC = 32; //20
     private static final int MIN_DIALOG_FONT_HEIGHT_PIXELS = 16;
     private static final double LARGE_FONT_SCALE_FACTOR = 1.6;
     private static final float PC_DPI = 76;

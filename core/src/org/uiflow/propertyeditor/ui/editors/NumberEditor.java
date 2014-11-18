@@ -34,14 +34,16 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         }
     };
 
+    private static final boolean INVERT_SCALING_FOR_NEGATIVE_VALUES = false;
+
     private Table table;
     private TextField numberField;
     private boolean errorStyle = false;
 
-    private TextButton decrementButton;
-    private TextButton incrementButton;
-    private TextButton tuneUpButton;
-    private TextButton tuneDownButton;
+    private Button decrementButton;
+    private Button incrementButton;
+    private Button tuneUpButton;
+    private Button tuneDownButton;
 
     private DecimalFormat decimalFormat = new DecimalFormat("0.0########");
 
@@ -69,11 +71,22 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
     @Override protected Actor createEditor(final NumberEditorConfiguration configuration, final UiContext uiContext) {
         table = new Table(uiContext.getSkin());
 
+        // TODO: Create custom ImageButton that actually takes a specified image and draws it ON TOP of a button, not requiring the button to have the image embedded in its graphics...
+
         // Create increment, decrement, and adjust buttons
         incrementButton = createChangeButton(uiContext, "+", 1, false, 1, true);
         decrementButton = createChangeButton(uiContext, "-", -1, false, 1, true);
-        tuneUpButton    = createChangeButton(uiContext, "++", 0, true, SCALE_FACTOR, false);
-        tuneDownButton  = createChangeButton(uiContext, "--", 0, true, 1 / SCALE_FACTOR, false);
+        tuneUpButton    = createChangeButton(uiContext, ".", 0, true, SCALE_FACTOR, false);
+        tuneDownButton  = createChangeButton(uiContext, "/", 0, true, 1 / SCALE_FACTOR, false);
+
+        Table incDec = new Table(uiContext.getSkin());
+        incDec.add(incrementButton).row();
+        incDec.add(decrementButton);
+
+        Table mulDiv = new Table(uiContext.getSkin());
+        mulDiv.add(tuneUpButton).row();
+        mulDiv.add(tuneDownButton);
+
 
         // Create number field
         numberField = new TextField("", uiContext.getSkin());
@@ -100,12 +113,10 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         slider.addListener(scrollWheelListener);
 
         // Arrange components in the ui
-        table.add(tuneDownButton);
-        table.add(decrementButton);
         table.add(numberFieldContainer).expandX();
-        table.add(incrementButton);
-        table.add(tuneUpButton);
-        table.add(slider).expandX().padLeft(uiContext.getSmallGap());
+        table.add(incDec);
+        table.add(mulDiv);
+        table.add(slider).expand().padLeft(uiContext.getSmallGap());
 
 
 
@@ -124,7 +135,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         return table;
     }
 
-    private TextButton createChangeButton(UiContext uiContext,
+    private Button createChangeButton(UiContext uiContext,
                                           String label,
                                           final double changeDelta,
                                           final boolean scale,
@@ -132,7 +143,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                                           final boolean enableAcceleration) {
 
         // Create button
-        final TextButton button = new TextButton(label, uiContext.getSkin());
+        final Button button = new TextButton(label, uiContext.getSkin());
 
         // Listen to scrolling
         button.addListener(scrollWheelListener);
@@ -179,7 +190,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
                     // Trigger value change
                     if (scale) {
-                        scaleValue(scaling, true, SCALE_TO_N_SIGNIFICANT_NUMBERS, true);
+                        scaleValue(scaling, INVERT_SCALING_FOR_NEGATIVE_VALUES, SCALE_TO_N_SIGNIFICANT_NUMBERS, true);
                     }
                     else {
                         changeValue(change);
@@ -203,7 +214,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                 if (buttonNum == MOUSE_BUTTON_FOR_ARROW_BUTTONS) {
 
                     if (scale) {
-                        scaleValue(scaleFactor, true, SCALE_TO_N_SIGNIFICANT_NUMBERS, true);
+                        scaleValue(scaleFactor, INVERT_SCALING_FOR_NEGATIVE_VALUES, SCALE_TO_N_SIGNIFICANT_NUMBERS, true);
                     }
                     else {
                         changeValue(changeDelta);

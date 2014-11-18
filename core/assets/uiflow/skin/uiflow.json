@@ -12,35 +12,36 @@ com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
 	dialogDim: { name: white, color: { r: 0, g: 0, b: 0, a: 0.45 } }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
-	default: { down: convex, up: concave },
-	toggle: { down: convex, checked: convex_selected, up: concave }
+	default: { down: button_pressed, up: button_up },
+	toggle: { down: button_pressed, checked: button_checked, up: button_up }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
-	default: { down: concave, up: convex, font: default-font, fontColor: white },
-	toggle: { down: concave, up: convex, checked: concave_selected, font: default-font, fontColor: white, downFontColor: black }
+	default: { down: button_pressed, up: button_up, font: default-font, fontColor: white },
+	toggle: { down: button_pressed, up: button_up, checked: button_checked, font: default-font, fontColor: white, downFontColor: black }
 },
 com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
-    default: { down: concave, up: convex},
-    toggle: { down: concave, up: convex, checked: concave_selected}
+    default: { down: button_pressed, up: button_up},
+    toggle: { down: button_pressed, up: button_up, checked: button_checked}
 },
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
-	default: { titleFont: default-font, background: panel, titleFontColor: white },
-	dialog: { titleFont: default-font, background: panel, titleFontColor: white, stageBackground: panel }
+	default: { titleFont: default-font, background: window, titleFontColor: white },
+	dialog: { titleFont: default-font, background: window, titleFontColor: white, stageBackground: root }
 },
 com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
-	default-horizontal: { background: concave, knob: convex_selected },
-	default-vertical: { background: concave, knob: convex_selected }
+	default-horizontal: { background: slider, knob: slider_handle },
+	default-vertical: { background: slider, knob: slider_handle }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
-	default-horizontal: { background: concave, knob: convex_selected },
-	default-vertical: { background: concave, knob: convex_selected }
+	default-horizontal: { background: slider, knob: slider_handle },
+	default-vertical: { background: slider, knob: slider_handle }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: default-font, fontColor: lightgrey },
-    highlight: { font: default-font, fontColor: white, background: highlight }
+    highlight: { font: default-font, fontColor: white, background: halo },
+    window_title: { font: title-font, fontColor: amber, background: window_title }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
-	default: { selection: selection, background: textfield, font: default-font, fontColor: amber, cursor: cursor },
-	error: { selection: selection, background: textfield_error, font: default-font, fontColor: white, cursor: cursor }
+	default: { selection: selection, background: field, font: default-font, fontColor: amber, cursor: cursor },
+	error: { selection: selection, background: field_error, font: default-font, fontColor: white, cursor: cursor }
 },
 }
