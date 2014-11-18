@@ -87,6 +87,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         mulDiv.add(tuneUpButton).row();
         mulDiv.add(tuneDownButton);
 
+        // TODO: Maybe create some spinner control
 
         // Create number field
         numberField = new TextField("", uiContext.getSkin());
@@ -102,7 +103,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
         // Create slider
         // TODO: Create custom component that:
-        // TODO: * Has a drawable for positive selected area, negative selected area, positive unselected area, negative unselected area, and position indicator
+        // TODO: * Has a drawable or color for positive selected area, negative selected area, positive unselected area, negative unselected area, and position indicator
         // TODO:   * Should support updating the drawables depending on the current value, or just in update call
         // TODO:   * Should support color functions to calculate the color for the drawables depending on the current value (and preferred default color)
         // TODO: * Should cover whole widget area (or drawable area), and have a flexible width, and configurable / flexible height

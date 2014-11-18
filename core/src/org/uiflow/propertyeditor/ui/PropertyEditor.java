@@ -114,7 +114,7 @@ public class PropertyEditor extends FlowWidgetBase {
                 nameLabel.setAlignment(Align.left);
                 break;
             case LEFT:
-                table.add(labelContainer).expandX().right().padRight(getUiContext().getGap());
+                table.add(labelContainer).right().padRight(getUiContext().getGap());
                 table.add(valueEditorContainer).expand().fillX();
                 nameLabel.setAlignment(Align.right);
                 break;

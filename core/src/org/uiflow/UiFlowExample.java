@@ -54,7 +54,7 @@ public class UiFlowExample extends ApplicationAdapter {
 
         // Create UI elements
         final Bean testBean = createTestBean();
-        BeanEditor beanEditor = new BeanEditor(LabelLocation.ABOVE);
+        BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT);
         beanEditor.setBean(testBean);
         rootTable.add(beanEditor.getUi(uiContext));
 
