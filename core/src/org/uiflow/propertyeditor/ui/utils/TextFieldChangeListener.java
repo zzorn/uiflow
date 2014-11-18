@@ -77,7 +77,6 @@ public abstract class TextFieldChangeListener extends InputListener {
 
             // Check if the textfield just got focused
             boolean hasFocus = isFocused(textField);
-            System.out.println("hasFocus = " + hasFocus);
             if (!hadFocus && hasFocus) {
 
                 // We got focused, select all text if desired
