@@ -32,8 +32,12 @@ com.badlogic.gdx.scenes.scene2d.ui.ProgressBar$ProgressBarStyle: {
 	default-vertical: { background: slider, knob: slider_handle }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
-	default-horizontal: { background: slider, knob: slider_handle },
-	default-vertical: { background: slider, knob: slider_handle }
+	default-horizontal: { background: slider, knob: button_up, knobBefore: selection},
+	default-vertical: { background: slider, knob: button_up, knobBefore: selection}
+},
+org.uiflow.propertyeditor.ui.widgets.FlowSlider$FlowSliderStyle: {
+	default-horizontal: { background: slider, knob: button_up, knobBefore: selection},
+	default-vertical: { background: slider, knob: button_up, knobBefore: selection}
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: default-font, fontColor: lightgrey },

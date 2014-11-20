@@ -32,7 +32,7 @@ public class NumberEditorConfiguration extends EditorConfigurationBase {
     }
 
     public NumberEditorConfiguration(Class<? extends Number> numberType) {
-        this(numberType, Double.MAX_VALUE, Double.MIN_VALUE, false, true, true);
+        this(numberType, Double.MIN_VALUE, Double.MAX_VALUE, false, true, true);
     }
 
     public NumberEditorConfiguration(Class<? extends Number> numberType,

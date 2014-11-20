@@ -3,9 +3,11 @@ package org.uiflow.propertyeditor.ui.editors;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.utils.Scaling;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.ui.utils.TextFieldChangeListener;
 import org.uiflow.propertyeditor.ui.ValueEditorBase;
+import org.uiflow.propertyeditor.ui.widgets.FlowSlider;
 import org.uiflow.utils.MathUtils;
 
 import java.text.DecimalFormat;
@@ -17,7 +19,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
     private static final int MOUSE_BUTTON_FOR_ARROW_BUTTONS = Input.Buttons.LEFT;
     private static final float MIN_TICK_DELAY = 0.01f;
-    private static final int SCALE_TO_N_SIGNIFICANT_NUMBERS = 3;
+    private static final int SCALE_TO_N_SIGNIFICANT_NUMBERS = 2;
     private static final double SCALE_FACTOR = 1.5;
 
     /**
@@ -66,28 +68,10 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
             return true;
         }
     };
-    private Slider slider;
+    private FlowSlider slider;
 
     @Override protected Actor createEditor(final NumberEditorConfiguration configuration, final UiContext uiContext) {
         table = new Table(uiContext.getSkin());
-
-        // TODO: Create custom ImageButton that actually takes a specified image and draws it ON TOP of a button, not requiring the button to have the image embedded in its graphics...
-
-        // Create increment, decrement, and adjust buttons
-        incrementButton = createChangeButton(uiContext, "+", 1, false, 1, true);
-        decrementButton = createChangeButton(uiContext, "-", -1, false, 1, true);
-        tuneUpButton    = createChangeButton(uiContext, ".", 0, true, SCALE_FACTOR, false);
-        tuneDownButton  = createChangeButton(uiContext, "/", 0, true, 1 / SCALE_FACTOR, false);
-
-        Table incDec = new Table(uiContext.getSkin());
-        incDec.add(incrementButton).row();
-        incDec.add(decrementButton);
-
-        Table mulDiv = new Table(uiContext.getSkin());
-        mulDiv.add(tuneUpButton).row();
-        mulDiv.add(tuneDownButton);
-
-        // TODO: Maybe create some spinner control
 
         // Create number field
         numberField = new TextField("", uiContext.getSkin());
@@ -96,30 +80,54 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         numberField.setRightAligned(true);
         numberField.addListener(scrollWheelListener);
 
+        // Create increment, decrement, and adjust buttons
+        incrementButton = createChangeButton(uiContext, "arrow_up", 1, false, 1, true);
+        decrementButton = createChangeButton(uiContext, "arrow_down", -1, false, 1, true);
+        tuneUpButton    = createChangeButton(uiContext, "arrow_up2", 0, true, SCALE_FACTOR, false);
+        tuneDownButton  = createChangeButton(uiContext, "arrow_down2", 0, true, 1 / SCALE_FACTOR, false);
+
+        final float buttonHeights = numberField.getHeight() / 2;
+        final float buttonWidths = buttonHeights;
+        Table incDec = new Table(uiContext.getSkin());
+        incDec.add(incrementButton).size(buttonWidths, buttonHeights).row();
+        incDec.add(decrementButton).size(buttonWidths, buttonHeights);
+
+        Table mulDiv = new Table(uiContext.getSkin());
+        mulDiv.add(tuneUpButton).size(buttonWidths, buttonHeights).row();
+        mulDiv.add(tuneDownButton).size(buttonWidths, buttonHeights);
+
         // Set number field width
         final float digitWidth = numberField.getStyle().font.getBounds("0").width;
         final float width = digitWidth * (configuration.getNumberOfDigitsToShow() + 2);
         numberFieldContainer.width(width);
 
         // Create slider
-        // TODO: Create custom component that:
-        // TODO: * Has a drawable or color for positive selected area, negative selected area, positive unselected area, negative unselected area, and position indicator
-        // TODO:   * Should support updating the drawables depending on the current value, or just in update call
-        // TODO:   * Should support color functions to calculate the color for the drawables depending on the current value (and preferred default color)
-        // TODO: * Should cover whole widget area (or drawable area), and have a flexible width, and configurable / flexible height
-        // TODO: * Should support a logarithmic scale with arbitrary exponent and centered value and min/max visible values
-        // TODO: * Should support mouse wheel adjustment
-        // TODO: * Should support listening to changes in value
-        slider = new Slider(0, 1, 0.001f, false, uiContext.getSkin());
+        slider = new FlowSlider(configuration.getMinValue(),
+                                configuration.getMaxValue(),
+                                calculateStepSize(configuration),
+                                false, 0, 0, uiContext.getSkin());
         slider.addListener(scrollWheelListener);
+        slider.addListener(new FlowSlider.FlowSliderListener() {
+            @Override public void onChanged(double newValue) {
+                // Drop last digits, as the slider is not very precise
+                newValue = MathUtils.roundToNDigits(newValue, SCALE_TO_N_SIGNIFICANT_NUMBERS);
+
+                // Convert to correct type
+                Number value = convertToCorrectNumberType(configuration.getNumberType(), newValue);
+
+                // Update the rest of the UI
+                updateEditedValue(value);
+
+                // Notify listeners
+                notifyValueEdited(value);
+            }
+        });
 
         // Arrange components in the ui
         table.add(numberFieldContainer).expandX();
-        table.add(incDec);
-        table.add(mulDiv);
-        table.add(slider).expand().padLeft(uiContext.getSmallGap());
-
-
+        table.add(incDec);//.padLeft(uiContext.getSmallGap());
+        table.add(mulDiv);//.padLeft(uiContext.getSmallGap());
+        table.add(slider).height(numberField.getHeight()).fill().expand();//.padLeft(uiContext.getSmallGap());
 
 
         numberField.addListener(new TextFieldChangeListener() {
@@ -136,15 +144,29 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         return table;
     }
 
+    private double calculateStepSize(NumberEditorConfiguration configuration) {
+        // We just want about a hundred steps on the slider.
+
+        double stepSize = (configuration.getMaxValue() - configuration.getMinValue()) * 0.01;
+
+        // Account for maximums or minimums like MAX_DOUBLE or POSITIVE_INFINITY
+        if (Double.isInfinite(stepSize) ||
+            Double.isNaN(stepSize) ||
+            stepSize == 0) stepSize = 0.01;
+
+        return stepSize;
+    }
+
     private Button createChangeButton(UiContext uiContext,
-                                          String label,
+                                          String imageName,
                                           final double changeDelta,
                                           final boolean scale,
                                           final double scaleFactor,
                                           final boolean enableAcceleration) {
 
         // Create button
-        final Button button = new TextButton(label, uiContext.getSkin());
+        final Button button = new Button(uiContext.getSkin());
+        button.add(new Image(uiContext.getSkin().getDrawable(imageName), Scaling.stretch));
 
         // Listen to scrolling
         button.addListener(scrollWheelListener);
@@ -309,14 +331,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                     else resultAsDouble -= 1;
                 }
 
-                // Convert to actual number type being edited
-                if (numberType.equals(Byte.class))         result = (byte) resultAsDouble;
-                else if (numberType.equals(Short.class))   result = (short) resultAsDouble;
-                else if (numberType.equals(Integer.class)) result = (int) resultAsDouble;
-                else if (numberType.equals(Long.class))    result = (long) resultAsDouble;
-                else if (numberType.equals(Float.class))   result = (float)(resultAsDouble);
-                else if (numberType.equals(Double.class))  result = resultAsDouble;
-                else throw new IllegalStateException("Unsupported number type in number field: " + numberType);
+                result = convertToCorrectNumberType(numberType, resultAsDouble);
 
                 // Update the rest of the UI
                 updateEditedValue(result);
@@ -325,6 +340,18 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                 notifyValueEdited(result);
             }
         }
+    }
+
+    private Number convertToCorrectNumberType(Class<? extends Number> numberType, double resultAsDouble) {
+        Number result;// Convert to actual number type being edited
+        if (numberType.equals(Byte.class))         result = (byte) resultAsDouble;
+        else if (numberType.equals(Short.class))   result = (short) resultAsDouble;
+        else if (numberType.equals(Integer.class)) result = (int) resultAsDouble;
+        else if (numberType.equals(Long.class))    result = (long) resultAsDouble;
+        else if (numberType.equals(Float.class))   result = (float)(resultAsDouble);
+        else if (numberType.equals(Double.class))  result = resultAsDouble;
+        else throw new IllegalStateException("Unsupported number type in number field: " + numberType);
+        return result;
     }
 
     private boolean isIntegerType(Class<? extends Number> numberType) {
@@ -346,6 +373,8 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         }
 
         numberField.setText(valueAsText);
+
+        if (value != null) slider.setValue(((Number)(value)).floatValue());
     }
 
     @Override protected void setDisabled(boolean disabled) {

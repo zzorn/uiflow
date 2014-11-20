@@ -89,8 +89,8 @@ public class UiFlowExample extends ApplicationAdapter {
     private Bean createTestBean() {
         final DynamicBean testBean = new DynamicBean("Troll");
         testBean.addProperty(new DynamicProperty("Name", TextEditorConfiguration.DEFAULT, "Igor"));
-        testBean.addProperty(new DynamicProperty("Hitpoints", NumberEditorConfiguration.DOUBLE_DEFAULT, 24.0));
-        testBean.addProperty(new DynamicProperty("Inventory Slots", NumberEditorConfiguration.INTEGER_DEFAULT, 16));
+        testBean.addProperty(new DynamicProperty("Hitpoints", new NumberEditorConfiguration(Double.class, 0, 1000), 24.0));
+        testBean.addProperty(new DynamicProperty("Inventory Slots", new NumberEditorConfiguration(Integer.class, 0, 100), 16));
         testBean.addProperty(new DynamicProperty("Favourite Food",
                                                  TextEditorConfiguration.DEFAULT_MULTILINE,
                                                  "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs"));
