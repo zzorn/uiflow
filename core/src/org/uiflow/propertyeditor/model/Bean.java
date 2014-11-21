@@ -17,7 +17,6 @@ public interface Bean {
      */
     List<Property> getProperties();
 
-
     /**
      * Listen to changes in the bean and the properties of it.
      */
@@ -27,6 +26,5 @@ public interface Bean {
      * Remove listener
      */
     void removeListener(BeanListener listener);
-
 
 }

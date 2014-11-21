@@ -1,6 +1,4 @@
-package org.uiflow.propertyeditor.model;
-
-import org.uiflow.propertyeditor.ui.ValueEditor;
+package org.uiflow.propertyeditor.ui.editors;
 
 /**
  * Information about the value editor to use for a Property.
@@ -13,6 +11,6 @@ public interface EditorConfiguration {
     /**
      * @return new editor instance.
      */
-    ValueEditor createEditor();
+    Editor createEditor();
 
 }

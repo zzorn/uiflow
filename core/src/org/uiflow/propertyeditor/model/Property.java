@@ -1,6 +1,6 @@
 package org.uiflow.propertyeditor.model;
 
-import org.uiflow.propertyeditor.ui.ValueEditor;
+import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
 
 /**
  *

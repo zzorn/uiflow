@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.ui;
+package org.uiflow.propertyeditor.ui.editors.bean;
 
 /**
  * Location of a label relative to the UI element it describes.

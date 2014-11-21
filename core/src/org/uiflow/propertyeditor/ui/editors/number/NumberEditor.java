@@ -1,12 +1,12 @@
-package org.uiflow.propertyeditor.ui.editors;
+package org.uiflow.propertyeditor.ui.editors.number;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Scaling;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.ui.utils.TextFieldChangeListener;
-import org.uiflow.propertyeditor.ui.ValueEditorBase;
+import org.uiflow.utils.TextFieldChangeListener;
+import org.uiflow.propertyeditor.ui.editors.EditorBase;
 import org.uiflow.propertyeditor.ui.widgets.FlowSlider;
 import org.uiflow.utils.MathUtils;
 
@@ -15,7 +15,7 @@ import java.text.DecimalFormat;
 /**
  *
  */
-public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
+public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> {
 
     private static final int MOUSE_BUTTON_FOR_ARROW_BUTTONS = Input.Buttons.LEFT;
     private static final float MIN_TICK_DELAY = 0.01f;
@@ -47,6 +47,8 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
     private Button tuneUpButton;
     private Button tuneDownButton;
 
+    private FlowSlider slider;
+
     private DecimalFormat decimalFormat = new DecimalFormat("0.0########");
 
     private final InputListener scrollWheelListener = new InputListener() {
@@ -68,7 +70,14 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
             return true;
         }
     };
-    private FlowSlider slider;
+
+    public NumberEditor() {
+        this(NumberEditorConfiguration.DOUBLE_DEFAULT);
+    }
+
+    public NumberEditor(NumberEditorConfiguration configuration) {
+        super(configuration);
+    }
 
     @Override protected Actor createEditor(final NumberEditorConfiguration configuration, final UiContext uiContext) {
         table = new Table(uiContext.getSkin());
@@ -124,11 +133,14 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
         });
 
         // Arrange components in the ui
-        table.add(numberFieldContainer).expandX();
-        table.add(incDec);//.padLeft(uiContext.getSmallGap());
-        table.add(mulDiv);//.padLeft(uiContext.getSmallGap());
-        table.add(slider).height(numberField.getHeight()).fill().expand();//.padLeft(uiContext.getSmallGap());
-
+        table.add(numberFieldContainer);
+        if (configuration.isShowArrows()) {
+            table.add(incDec);//.padLeft(uiContext.getSmallGap());
+            table.add(mulDiv);//.padLeft(uiContext.getSmallGap());
+        }
+        if (configuration.isShowSlider()) {
+            table.add(slider).height(numberField.getHeight()).fill().expand();//.padLeft(uiContext.getSmallGap());
+        }
 
         numberField.addListener(new TextFieldChangeListener() {
             @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
@@ -274,7 +286,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
      */
     protected final void changeValue(Number delta) {
         if (delta.doubleValue() != 0) {
-            final Number editedValue = (Number) getEditedValue();
+            final Number editedValue = getValue();
             if (editedValue != null) {
                 Number result;
 
@@ -307,7 +319,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
      */
     protected final void scaleValue(double scaling, boolean invertScalingForNegativeValues, int roundToNSignificantNumbers, boolean forceChange) {
         if (scaling != 1) {
-            final Number editedValue = (Number) getEditedValue();
+            final Number editedValue = getValue();
             System.out.println("editedValue = " + editedValue);
             if (editedValue != null) {
                 Number result;
@@ -361,7 +373,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
                numberType == Long.class;
     }
 
-    @Override protected void updateEditedValue(Object value) {
+    @Override protected void updateEditedValue(Number value) {
         final String valueAsText;
         if (value instanceof Double ||
             value instanceof Float ) {
@@ -374,7 +386,7 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
 
         numberField.setText(valueAsText);
 
-        if (value != null) slider.setValue(((Number)(value)).floatValue());
+        if (value != null) slider.setValue(value.floatValue());
     }
 
     @Override protected void setDisabled(boolean disabled) {
@@ -406,4 +418,5 @@ public class NumberEditor extends ValueEditorBase<NumberEditorConfiguration> {
             numberField.layout();
         }
     }
+
 }

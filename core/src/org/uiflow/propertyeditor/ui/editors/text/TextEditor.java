@@ -1,21 +1,28 @@
-package org.uiflow.propertyeditor.ui.editors;
+package org.uiflow.propertyeditor.ui.editors.text;
 
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.ui.utils.TextFieldChangeListener;
-import org.uiflow.propertyeditor.ui.ValueEditorBase;
+import org.uiflow.propertyeditor.ui.editors.EditorBase;
+import org.uiflow.utils.TextFieldChangeListener;
 
 /**
  * String editor that provides a single line textfield.
  */
-public class TextEditor extends ValueEditorBase<TextEditorConfiguration> {
+public class TextEditor extends EditorBase<String, TextEditorConfiguration> {
 
     private TextField textWidget;
-    private Button button;
 
-    @Override protected void updateEditedValue(Object value) {
-        String text = value == null ? "" : value.toString();
+    public TextEditor() {
+        this(TextEditorConfiguration.DEFAULT);
+    }
+
+    public TextEditor(TextEditorConfiguration configuration) {
+        super(configuration);
+    }
+
+    @Override protected void updateEditedValue(String value) {
+        String text = value == null ? "" : value;
         textWidget.setText(text);
     }
 
@@ -29,7 +36,7 @@ public class TextEditor extends ValueEditorBase<TextEditorConfiguration> {
         // Create single-line text field or multi-line text area
         if (configuration.isMultiLine()) {
             final TextArea textArea = new TextArea("", uiContext.getSkin());
-            textArea.setPrefRows(Math.max(0, configuration.getRowsToShow() - 0.8f)); // Fudge factor to get desired number of rows
+            textArea.setPrefRows(Math.max(0, configuration.getRows() - 0.8f)); // Fudge factor to get desired number of rows
             textWidget = textArea;
         }
         else {
@@ -37,15 +44,6 @@ public class TextEditor extends ValueEditorBase<TextEditorConfiguration> {
         }
 
         table.add(textWidget).expandX().fillX();
-
-        /* Not working too well with mouse selection
-        // When textfield is selected, select all text so that it is easy to replace existing content.
-        textField.addListener(new ClickListener() {
-            @Override public void clicked(InputEvent event, float x, float y) {
-                textField.selectAll();
-            }
-        });
-        */
 
         // When textfield content is edited, update the value.
         textWidget.addListener(new TextFieldChangeListener(){

@@ -1,54 +1,59 @@
-package org.uiflow.propertyeditor.ui;
+package org.uiflow.propertyeditor.ui.editors.bean;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.BeanListener;
 import org.uiflow.propertyeditor.model.Property;
-import org.uiflow.widgets.FlowWidgetBase;
+import org.uiflow.propertyeditor.ui.editors.EditorBase;
 
 import java.util.*;
 
 /**
  *
  */
-public class BeanEditor extends FlowWidgetBase {
+public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
-    private final Map<Property, PropertyEditor> propertyEditors = new HashMap<Property, PropertyEditor>();
+    private final LinkedHashMap<Property, PropertyUi> propertyEditors = new LinkedHashMap<Property, PropertyUi>();
     private Bean bean;
     private Table beanTable;
     private Table propertyList;
-    private final LabelLocation labelLocation;
 
     private transient float lastMaxLabelWidth = 0;
 
 
     private final BeanListener beanListener = new BeanListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+            notifyValueEdited(bean);
         }
 
         @Override public void onValueEditorChanged(Bean bean, Property property) {
         }
 
         @Override public void onPropertyChanged(Bean bean, Property property) {
-            // Align labels if needed (in case the label of some property was changed)
-            alignLabels();
+            // Layout in case it didn't already
+            propertyList.layout();
         }
 
         @Override public void onChanged(Bean bean) {
             updateUi();
+            notifyValueEdited(bean);
         }
 
         @Override public void onPropertyAdded(Bean bean, Property property) {
             addPropertyUi(property);
+            rebuildPropertyList();
+            notifyValueEdited(bean);
         }
 
         @Override public void onPropertyRemoved(Bean bean, Property property) {
             removePropertyUi(property);
+            rebuildPropertyList();
+            notifyValueEdited(bean);
         }
     };
 
@@ -56,16 +61,25 @@ public class BeanEditor extends FlowWidgetBase {
 
 
     /**
+     * Creates a new BeanEditor using the default configuration.
      */
     public BeanEditor() {
-        this(LabelLocation.LEFT);
+        this(BeanEditorConfiguration.DEFAULT);
     }
 
     /**
+     * Creates a new BeanEditor using the specified configuration.
+     */
+    public BeanEditor(BeanEditorConfiguration configuration) {
+        super(configuration);
+    }
+
+    /**
+     * Creates a new BeanEditor.
      * @param labelLocation location of the property labels relative the the property editors.
      */
     public BeanEditor(LabelLocation labelLocation) {
-        this.labelLocation = labelLocation;
+        super(new BeanEditorConfiguration(labelLocation));
     }
 
     public Bean getBean() {
@@ -88,10 +102,13 @@ public class BeanEditor extends FlowWidgetBase {
         }
     }
 
-    @Override protected Actor createUi(UiContext uiContext) {
+    @Override protected void updateEditedValue(Bean value) {
+        setBean(value);
+    }
+
+    @Override protected Actor createEditor(BeanEditorConfiguration configuration, UiContext uiContext) {
         beanTable = new Table(uiContext.getSkin());
         beanTable.setBackground("window_titled");
-
 
         // Name label
         nameLabel = new Label("", uiContext.getSkin());
@@ -102,11 +119,9 @@ public class BeanEditor extends FlowWidgetBase {
 
         // Property list
         propertyList = new Table(uiContext.getSkin());
-        beanTable.add(propertyList).expand().fill();
+        beanTable.add(propertyList).expand().fill().pad(uiContext.getGap());
 
         updateUi();
-
-        alignLabels();
 
         return beanTable;
     }
@@ -122,15 +137,24 @@ public class BeanEditor extends FlowWidgetBase {
         }
     }
 
+    @Override protected void setDisabled(boolean disabled) {
+        for (PropertyUi propertyUi : propertyEditors.values()) {
+            propertyUi.setDisabled(disabled);
+        }
+    }
+
     /**
      * Add or remove missing or extra property UIs.
      */
     private void updateAvailablePropertyUis() {
         List<Property> propertiesToRemove = null;
 
+        boolean propertiesAddedOrRemoved = false;
+
         if (bean == null && !propertyEditors.isEmpty()) {
             // Bean is null, remove all property uis
             propertiesToRemove = new ArrayList<Property>(propertyEditors.keySet());
+            propertiesAddedOrRemoved = true;
         }
         else if (bean != null) {
             final List<Property> beanProperties = bean.getProperties();
@@ -140,6 +164,7 @@ public class BeanEditor extends FlowWidgetBase {
                 if (!propertyEditors.containsKey(propertyInBean)) {
                     // Add missing property UI
                     addPropertyUi(propertyInBean);
+                    propertiesAddedOrRemoved = true;
                 }
             }
 
@@ -151,6 +176,7 @@ public class BeanEditor extends FlowWidgetBase {
                         propertiesToRemove = new ArrayList<Property>(3);
                     }
                     propertiesToRemove.add(propertyInUi);
+                    propertiesAddedOrRemoved = true;
                 }
             }
         }
@@ -163,66 +189,70 @@ public class BeanEditor extends FlowWidgetBase {
             }
             propertiesToRemove.clear();
         }
+
+        // Recreate the UI
+        if (propertiesAddedOrRemoved) {
+            rebuildPropertyList();
+        }
     }
 
     private void removePropertyUi(Property property) {
         if (isUiCreated()) {
             // Remove from lookup map
-            final PropertyEditor editor = propertyEditors.remove(property);
+            final PropertyUi editor = propertyEditors.remove(property);
 
             // Remove the widget from the ui if the ui has been created
             if (editor != null) {
-                if (editor.isUiCreated()) {
-                    propertyList.removeActor(editor.getUi(getUiContext()));
-                }
-
                 // Dispose removed editor
                 editor.dispose();
             }
-
-            // Align labels if needed
-            alignLabels();
         }
     }
 
     private void addPropertyUi(Property property) {
         if (isUiCreated()) {
             // Create editor
-            final PropertyEditor propertyEditor = new PropertyEditor(property, labelLocation);
+            final PropertyUi propertyUi = new PropertyUi(property, getConfiguration().getLabelLocation());
 
             // Add to lookup map
-            propertyEditors.put(property, propertyEditor);
-
-            // Add to ui
-            propertyList.add(propertyEditor.getUi(getUiContext())).expandX().fillX();
-
-            // Update label width of all properties if needed, to align the labels
-            alignLabels();
+            propertyEditors.put(property, propertyUi);
         }
     }
 
-    private void alignLabels() {
-        // Calculate maximum label width
-        float maxNameLabelWidth = -1;
-        for (PropertyEditor propertyEditor : propertyEditors.values()) {
-            final float nameLabelWidth = propertyEditor.getNameLabelWidth();
-            if (nameLabelWidth > maxNameLabelWidth) {
-                maxNameLabelWidth = nameLabelWidth;
+    private void rebuildPropertyList() {
+        if (isUiCreated()) {
+            // Remove all property UIs
+            propertyList.clear();
+
+            // Add property UIs
+            final LabelLocation labelLocation = getConfiguration().getLabelLocation();
+            for (Map.Entry<Property, PropertyUi> entry : propertyEditors.entrySet()) {
+                final PropertyUi propertyUi = entry.getValue();
+
+                final Actor ui = propertyUi.getUi(getUiContext());
+                final Actor label = propertyUi.getLabelUi();
+
+                switch (labelLocation) {
+                    case LEFT:
+                        propertyList.add(label).right();
+                        propertyList.add(ui).expandX().fillX().row();
+                        break;
+                    case ABOVE:
+                        propertyList.add(label).left().expandX().fillX().row();
+                        propertyList.add(ui).expandX().fillX().row();
+                        break;
+                    case BELOW:
+                        propertyList.add(ui).expandX().fillX().row();
+                        propertyList.add(label).left().expandX().fillX().row();
+                        break;
+                    case NONE:
+                        propertyList.add(ui).expandX().fillX().row();
+                        break;
+                }
+
             }
         }
-
-        // If the maximum label width changed, update all property editor label widths to align them
-        if (maxNameLabelWidth != lastMaxLabelWidth) {
-            lastMaxLabelWidth = maxNameLabelWidth;
-
-            for (PropertyEditor propertyEditor : propertyEditors.values()) {
-                propertyEditor.setNameLabelWidth(maxNameLabelWidth);
-            }
-
-            // Re-layout as needed
-            beanTable.layout();
-        }
-
     }
+
 
 }

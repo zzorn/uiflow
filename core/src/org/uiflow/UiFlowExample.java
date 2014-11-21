@@ -2,24 +2,18 @@ package org.uiflow;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.BeanListener;
 import org.uiflow.propertyeditor.model.Property;
 import org.uiflow.propertyeditor.model.dynamic.DynamicBean;
 import org.uiflow.propertyeditor.model.dynamic.DynamicProperty;
-import org.uiflow.propertyeditor.ui.editors.NumberEditorConfiguration;
-import org.uiflow.propertyeditor.ui.editors.TextEditorConfiguration;
-import org.uiflow.propertyeditor.ui.BeanEditor;
-import org.uiflow.propertyeditor.ui.LabelLocation;
+import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.text.TextEditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.bean.BeanEditor;
+import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
 
 public class UiFlowExample extends ApplicationAdapter {
 
@@ -88,58 +82,20 @@ public class UiFlowExample extends ApplicationAdapter {
 
     private Bean createTestBean() {
         final DynamicBean testBean = new DynamicBean("Troll");
-        testBean.addProperty(new DynamicProperty("Name", TextEditorConfiguration.DEFAULT, "Igor"));
-        testBean.addProperty(new DynamicProperty("Hitpoints", new NumberEditorConfiguration(Double.class, 0, 1000), 24.0));
-        testBean.addProperty(new DynamicProperty("Inventory Slots", new NumberEditorConfiguration(Integer.class, 0, 100), 16));
-        testBean.addProperty(new DynamicProperty("Favourite Food",
-                                                 TextEditorConfiguration.DEFAULT_MULTILINE,
-                                                 "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs"));
+        testBean.addString("Name", "Igor");
+        testBean.addDouble("Hitpoints", 24, 0, 1000, false, true);
+        testBean.addInt("Inventory Slots", 16, 0, 100, false, false);
+        testBean.addString("Favourite Foods", "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs", 4);
+
+        DynamicBean appearance = new DynamicBean("Appearance");
+        appearance.addString("Hat");
+        appearance.addDouble("Height");
+        appearance.addString("Color");
+        testBean.addBean("Appearance", appearance, LabelLocation.LEFT);
 
         return testBean;
     }
 
-    private Skin createTestSkin() {
-        Skin skin = new Skin();
-
-        // Generate a 1x1 white texture and store it in the skin named "white".
-        Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.WHITE);
-        pixmap.fill();
-        skin.add("white", new Texture(pixmap));
-
-        // Store the default libgdx font under the name "default".
-        skin.add("default", new BitmapFont());
-
-        // Configure a TextButtonStyle and name it "default". Skin resources are stored by type, so this doesn't overwrite the font.
-        TextButton.TextButtonStyle textButtonStyle = new TextButton.TextButtonStyle();
-        textButtonStyle.up = skin.newDrawable("white", Color.DARK_GRAY);
-        textButtonStyle.down = skin.newDrawable("white", Color.DARK_GRAY);
-        textButtonStyle.checked = skin.newDrawable("white", Color.BLUE);
-        textButtonStyle.over = skin.newDrawable("white", Color.LIGHT_GRAY);
-        textButtonStyle.font = skin.getFont("default");
-        skin.add("default", textButtonStyle);
-
-        // Configure a default text field type
-        TextField.TextFieldStyle textFieldStyle = new TextField.TextFieldStyle();
-        textFieldStyle.background = skin.newDrawable("white", Color.DARK_GRAY);
-        textFieldStyle.cursor = skin.newDrawable("white", Color.LIGHT_GRAY);
-        textFieldStyle.disabledBackground = skin.newDrawable("white", Color.DARK_GRAY);
-        textFieldStyle.disabledFontColor = Color.LIGHT_GRAY;
-        textFieldStyle.focusedBackground = skin.newDrawable("white", Color.OLIVE);
-        textFieldStyle.focusedFontColor = Color.WHITE;
-        textFieldStyle.fontColor = Color.WHITE;
-        textFieldStyle.selection = skin.newDrawable("white", Color.BLUE);
-        textFieldStyle.font = skin.getFont("default");
-        skin.add("default", textFieldStyle);
-
-        Label.LabelStyle labelStyle = new Label.LabelStyle();
-        labelStyle.background = skin.newDrawable("white", new Color(0.4f, 0.4f, 0.4f, 1));
-        labelStyle.font = skin.getFont("default");
-        labelStyle.fontColor = Color.WHITE;
-        skin.add("default", labelStyle);
-
-        return skin;
-    }
 
     private BeanListener createdebugPrintListener() {
         return new BeanListener() {

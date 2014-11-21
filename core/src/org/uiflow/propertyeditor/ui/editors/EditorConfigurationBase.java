@@ -1,27 +1,25 @@
-package org.uiflow.propertyeditor.model;
-
-import org.uiflow.propertyeditor.ui.ValueEditor;
+package org.uiflow.propertyeditor.ui.editors;
 
 /**
  * Common functionality for EditorConfigurations.
  */
 public abstract class EditorConfigurationBase implements EditorConfiguration {
 
-    private final Class<? extends ValueEditor> editorClass;
+    private final Class<? extends Editor> editorClass;
 
-    public EditorConfigurationBase(Class<? extends ValueEditor> editorClass) {
+    public EditorConfigurationBase(Class<? extends Editor> editorClass) {
         this.editorClass = editorClass;
     }
 
-    @Override public final ValueEditor createEditor() {
+    @Override public final Editor createEditor() {
         try {
             // Create instance using no-argument constructor.
-            final ValueEditor valueEditor = editorClass.newInstance();
+            final Editor editor = editorClass.newInstance();
 
             // Configure created instance with this configuration class
-            valueEditor.configure(this);
+            editor.setConfiguration(this);
 
-            return valueEditor;
+            return editor;
         } catch (Exception e) {
             e.printStackTrace();
             throw new IllegalStateException("Could not create a value editor of type " + editorClass + " from ValueEditorInfo "+this+" : " + e.getMessage(), e);

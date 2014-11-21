@@ -1,12 +1,16 @@
 package org.uiflow.propertyeditor.model.dynamic;
 
+import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.BeanBase;
 import org.uiflow.propertyeditor.model.Property;
+import org.uiflow.propertyeditor.model.PropertyDirection;
+import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.bean.BeanEditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
+import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
+import org.uiflow.propertyeditor.ui.editors.text.TextEditorConfiguration;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Simple implementation of Bean that allows properties to be added and removed on the fly.
@@ -24,9 +28,10 @@ public class DynamicBean extends BeanBase {
 
     /**
      * @param name user readable name for the bean.
+     * @param initialProperties zero or more initial properties of the bean.
      */
-    public DynamicBean(String name) {
-        this(name, null);
+    public DynamicBean(String name, Property ... initialProperties) {
+        this(name, initialProperties.length == 0 ? null : Arrays.asList(initialProperties));
     }
 
     /**
@@ -66,9 +71,247 @@ public class DynamicBean extends BeanBase {
     }
 
     /**
+     * Adds a new bean type property to this bean.
+     *
+     * @param name name of the property
+     * @return the added property
+     */
+    public Property addBean(String name) {
+        return addBean(name, null);
+    }
+
+    /**
+     * Adds a new bean type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @return the added property
+     */
+    public Property addBean(String name, Bean value) {
+        return addProperty(name, value, new BeanEditorConfiguration());
+    }
+
+    /**
+     * Adds a new bean type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param  labelLocation where the label for bean properties should be in relation to the bean editor.
+     * @return the added property
+     */
+    public Property addBean(String name, Bean value, LabelLocation labelLocation) {
+        return addProperty(name, value, new BeanEditorConfiguration(labelLocation));
+    }
+
+    /**
+     * Adds a new string type property to this bean.
+     *
+     * @param name name of the property
+     * @return the added property
+     */
+    public Property addString(String name) {
+        return addString(name, "");
+    }
+
+    /**
+     * Adds a new string type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @return the added property
+     */
+    public Property addString(String name, String value) {
+        return addProperty(name, value, new TextEditorConfiguration());
+    }
+
+    /**
+     * Adds a new string type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param rows number of rows in the editor.
+     * @return the added property
+     */
+    public Property addString(String name, String value, int rows) {
+        return addProperty(name, value, new TextEditorConfiguration(rows));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @return the added property
+     */
+    public Property addDouble(String name) {
+        return addDouble(name, 0);
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @return the added property
+     */
+    public Property addDouble(String name, double value) {
+        return addProperty(name, value, new NumberEditorConfiguration(Double.class));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @return the added property
+     */
+    public Property addDouble(String name, double value, double min, double max) {
+        return addProperty(name, value, new NumberEditorConfiguration(Double.class, min, max));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
+     * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
+     * @return the added property
+     */
+    public Property addDouble(String name, double value, double min, double max, boolean enforceRange, boolean logarithmic) {
+        return addProperty(name,
+                           value,
+                           new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic));
+    }
+
+    /**
+     * Adds a new float type property to this bean.
+     *
+     * @param name name of the property
+     * @return the added property
+     */
+    public Property addFloat(String name) {
+        return addFloat(name, 0);
+    }
+
+    /**
+     * Adds a new float type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @return the added property
+     */
+    public Property addFloat(String name, float value) {
+        return addProperty(name, value, new NumberEditorConfiguration(Float.class));
+    }
+
+    /**
+     * Adds a new float type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @return the added property
+     */
+    public Property addFloat(String name, float value, float min, float max) {
+        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, max));
+    }
+
+    /**
+     * Adds a new float type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
+     * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
+     * @return the added property
+     */
+    public Property addFloat(String name, float value, float min, float max, boolean enforceRange, boolean logarithmic) {
+        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic));
+    }
+
+    /**
+     * Adds a new integer type property to this bean.
+     *
+     * @param name name of the property
+     * @return the added property
+     */
+    public Property addInt(String name) {
+        return addInt(name, 0);
+    }
+
+    /**
+     * Adds a new integer type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @return the added property
+     */
+    public Property addInt(String name, int value) {
+        return addProperty(name, value, new NumberEditorConfiguration(Integer.class));
+    }
+
+    /**
+     * Adds a new integer type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @return the added property
+     */
+    public Property addInt(String name, int value, int min, int max) {
+        return addProperty(name, value, new NumberEditorConfiguration(Integer.class, min, max));
+    }
+
+    /**
+     * Adds a new integer type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
+     * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
+     * @return the added property
+     */
+    public Property addInt(String name, int value, int min, int max, boolean enforceRange, boolean logarithmic) {
+        return addProperty(name, value, new NumberEditorConfiguration(Integer.class, min, max, enforceRange, logarithmic));
+    }
+
+    /**
+     * Adds a new property to this bean, with an initial value or null.
+     * @param name name of the property
+     * @param editorConfiguration editor configuration for the property
+     * @return the added property
+     */
+    public Property addProperty(String name, EditorConfiguration editorConfiguration) {
+        return addProperty(name, null, editorConfiguration);
+    }
+
+    /**
+     * Adds a new property to this bean.
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param editorConfiguration editor configuration for the property
+     * @return the added property
+     */
+    public Property addProperty(String name, Object value, EditorConfiguration editorConfiguration) {
+        final DynamicProperty property = new DynamicProperty(name, editorConfiguration, value, PropertyDirection.IN);
+        addProperty(property);
+        return property;
+    }
+
+    /**
      * Adds a new property to this bean.
      */
-    public void addProperty(Property property) {
+    public Property addProperty(Property property) {
         if (property == null) throw new IllegalArgumentException("The property can not be null");
         if (properties.contains(property)) throw new IllegalArgumentException("The properties already contain the property" + property);
 
@@ -79,6 +322,8 @@ public class DynamicBean extends BeanBase {
         properties.add(property);
 
         notifyPropertyAdded(property);
+
+        return property;
     }
 
     /**

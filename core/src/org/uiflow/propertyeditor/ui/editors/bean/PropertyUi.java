@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.ui;
+package org.uiflow.propertyeditor.ui.editors.bean;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -9,24 +9,26 @@ import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.Bean;
 import org.uiflow.propertyeditor.model.Property;
 import org.uiflow.propertyeditor.model.PropertyListener;
+import org.uiflow.propertyeditor.ui.editors.Editor;
+import org.uiflow.propertyeditor.ui.editors.EditorListener;
 import org.uiflow.widgets.FlowWidgetBase;
 
 /**
  * Helper class for handling the edition of one property
  */
-public class PropertyEditor extends FlowWidgetBase {
+public class PropertyUi extends FlowWidgetBase {
 
     private Property property;
     private Label nameLabel;
     private Table table;
-    private ValueEditor valueEditor;
+    private Editor editor;
     private final LabelLocation labelLocation;
     private Container<Label> labelContainer;
     private Container<Actor> valueEditorContainer;
 
 
-    private ValueEditorListener valueEditorListener = new ValueEditorListener() {
-        @Override public void onValueEdited(ValueEditor valueEditor, Object currentValue) {
+    private EditorListener editorListener = new EditorListener() {
+        @Override public void onValueEdited(Editor editor, Object currentValue) {
             if (property != null) {
                 property.setValue(currentValue);
             }
@@ -34,8 +36,8 @@ public class PropertyEditor extends FlowWidgetBase {
     };
     private final PropertyListener propertyListener = new PropertyListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
-            if (valueEditor != null) {
-                valueEditor.setEditedValue(property.getValue());
+            if (editor != null) {
+                editor.setValue(property.getValue());
             }
         }
 
@@ -51,14 +53,14 @@ public class PropertyEditor extends FlowWidgetBase {
 
     /**
      */
-    public PropertyEditor() {
+    public PropertyUi() {
         this(null);
     }
 
     /**
      * @param property property to edit
      */
-    public PropertyEditor(Property property) {
+    public PropertyUi(Property property) {
         this(property, LabelLocation.LEFT);
     }
 
@@ -66,7 +68,7 @@ public class PropertyEditor extends FlowWidgetBase {
      * @param property property to edit
      * @param labelLocation relative location of the label.
      */
-    public PropertyEditor(Property property, LabelLocation labelLocation) {
+    public PropertyUi(Property property, LabelLocation labelLocation) {
         this.labelLocation = labelLocation;
         setProperty(property);
     }
@@ -89,6 +91,10 @@ public class PropertyEditor extends FlowWidgetBase {
 
             updateUi();
         }
+    }
+
+    Actor getLabelUi() {
+        return labelContainer;
     }
 
     @Override protected Actor createUi(UiContext uiContext) {
@@ -138,40 +144,27 @@ public class PropertyEditor extends FlowWidgetBase {
         return table;
     }
 
-    public void setNameLabelWidth(float width) {
-        if (labelContainer == null) throw new IllegalStateException("Name label not yet initialized for this property, can not call setNameLabelWidth");
-
-        labelContainer.width(width).right();
-        labelContainer.layout();
-    }
-
-    public float getNameLabelWidth() {
-        if (nameLabel == null) throw new IllegalStateException("Name label not yet initialized for this property, can not call getNameLabelWidth");
-
-        return nameLabel.getPrefWidth();
-    }
-
     private void buildValueEditor() {
         // Remove old if present
-        if (valueEditor != null && valueEditor.isUiCreated()) {
-            valueEditor.removeListener(valueEditorListener);
-            valueEditorContainer.removeActor(valueEditor.getUi(getUiContext()));
-            valueEditor.dispose();
+        if (editor != null && editor.isUiCreated()) {
+            editor.removeListener(editorListener);
+            valueEditorContainer.removeActor(editor.getUi(getUiContext()));
+            editor.dispose();
         }
 
         if (property == null) {
-            valueEditor = null;
+            editor = null;
         }
         else {
             // Create instance
             try {
-                valueEditor = property.getEditorConfiguration().createEditor();
+                editor = property.getEditorConfiguration().createEditor();
             } catch (Exception e) {
                 throw new IllegalStateException("Could not create editor for property " + property, e);
             }
 
-            valueEditor.addListener(valueEditorListener);
-            valueEditorContainer.setActor(valueEditor.getUi(getUiContext()));
+            editor.addListener(editorListener);
+            valueEditorContainer.setActor(editor.getUi(getUiContext()));
             valueEditorContainer.fillX();
         }
 
@@ -187,7 +180,11 @@ public class PropertyEditor extends FlowWidgetBase {
             nameLabel.setText(name);
 
             // Update edited value
-            if (property != null && valueEditor != null) valueEditor.setEditedValue(property.getValue());
+            if (property != null && editor != null) editor.setValue(property.getValue());
         }
+    }
+
+    public void setDisabled(boolean disabled) {
+        // TODO: Implement
     }
 }

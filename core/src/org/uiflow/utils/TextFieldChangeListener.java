@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.ui.utils;
+package org.uiflow.utils;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;

@@ -1,15 +1,17 @@
-package org.uiflow.propertyeditor.ui.editors;
+package org.uiflow.propertyeditor.ui.editors.number;
 
-import org.uiflow.propertyeditor.model.EditorConfigurationBase;
+import org.uiflow.propertyeditor.ui.editors.EditorConfigurationBase;
 
 /**
- *
+ * Configuration for a NumberEditor.
  */
 public class NumberEditorConfiguration extends EditorConfigurationBase {
 
     public static final NumberEditorConfiguration INTEGER_DEFAULT = new NumberEditorConfiguration(Integer.class);
     public static final NumberEditorConfiguration DOUBLE_DEFAULT = new NumberEditorConfiguration(Double.class);
-    public static final NumberEditorConfiguration DOUBLE_ZERO_TO_HUNDRED = new NumberEditorConfiguration(Double.class, 0, 100, false, true, true);
+    public static final NumberEditorConfiguration DOUBLE_ZERO_TO_HUNDRED = new NumberEditorConfiguration(Double.class, 0, 100,
+                                                                                                         false,
+                                                                                                         false, true, true);
 
     private static final double DEFAULT_DELAY_BEFORE_ARROW_BUTTON_REPEAT = 0.3;
     private static final double ARROW_BUTTON_REPEAT_DELAY = 0.15;
@@ -19,6 +21,7 @@ public class NumberEditorConfiguration extends EditorConfigurationBase {
     private Class<? extends Number> numberType;
     private double maxValue;
     private double minValue;
+    private boolean enforceRange;
     private boolean logarithmic;
     private boolean showSlider;
     private boolean showArrows;
@@ -32,25 +35,34 @@ public class NumberEditorConfiguration extends EditorConfigurationBase {
     }
 
     public NumberEditorConfiguration(Class<? extends Number> numberType) {
-        this(numberType, Double.MIN_VALUE, Double.MAX_VALUE, false, true, true);
+        this(numberType, Double.MIN_VALUE, Double.MAX_VALUE);
     }
 
     public NumberEditorConfiguration(Class<? extends Number> numberType,
                                      double minValue,
                                      double maxValue) {
-        this(numberType, minValue, maxValue, false, false, true);
+        this(numberType, minValue, maxValue, true);
     }
 
     public NumberEditorConfiguration(Class<? extends Number> numberType,
                                      double minValue,
                                      double maxValue,
+                                     final boolean enforceRange) {
+        this(numberType, minValue, maxValue, enforceRange, false);
+    }
+
+    public NumberEditorConfiguration(Class<? extends Number> numberType,
+                                     double minValue,
+                                     double maxValue,
+                                     final boolean enforceRange,
                                      boolean logarithmic) {
-        this(numberType, minValue, maxValue, logarithmic, true, true);
+        this(numberType, minValue, maxValue, enforceRange, logarithmic, true, true);
     }
 
     public NumberEditorConfiguration(Class<? extends Number> numberType,
                                      double minValue,
                                      double maxValue,
+                                     boolean enforceRange,
                                      boolean logarithmic,
                                      boolean showSlider,
                                      boolean showArrows) {
@@ -85,6 +97,14 @@ public class NumberEditorConfiguration extends EditorConfigurationBase {
 
     public void setMaxValue(double maxValue) {
         this.maxValue = maxValue;
+    }
+
+    public boolean isEnforceRange() {
+        return enforceRange;
+    }
+
+    public void setEnforceRange(boolean enforceRange) {
+        this.enforceRange = enforceRange;
     }
 
     public boolean isLogarithmic() {

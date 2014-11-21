@@ -1,6 +1,7 @@
 package org.uiflow.propertyeditor.model.dynamic;
 
 import org.uiflow.propertyeditor.model.*;
+import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
 
 /**
  * Simple implementation of Property.

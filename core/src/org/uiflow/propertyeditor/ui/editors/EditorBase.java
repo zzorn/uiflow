@@ -1,8 +1,7 @@
-package org.uiflow.propertyeditor.ui;
+package org.uiflow.propertyeditor.ui.editors;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.model.EditorConfiguration;
 import org.uiflow.widgets.FlowWidgetBase;
 
 import java.util.ArrayList;
@@ -11,32 +10,39 @@ import java.util.List;
 /**
  * Common functionality for ValueEditors.
  */
-public abstract class ValueEditorBase<T extends EditorConfiguration> extends FlowWidgetBase implements ValueEditor<T> {
+public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowWidgetBase implements Editor<T, C> {
 
     private boolean enabled = true;
-    private List<ValueEditorListener> listeners = new ArrayList<ValueEditorListener>(4);
-    private Object editedValue;
+    private List<EditorListener<T>> listeners = new ArrayList<EditorListener<T>>(4);
+    private T editedValue;
 
     private transient boolean sendingEditUpdate = false;
-    private T configuration;
+    private C configuration;
 
-    @Override public final void configure(T configuration) {
-        if (this.configuration != null) throw new IllegalStateException("The value editor '"+this+"' has already been configured!");
+    /**
+     * @param configuration a default configuration to use if none is provided by the user.  Should not be null.
+     */
+    protected EditorBase(C configuration) {
+        setConfiguration(configuration);
+    }
+
+    @Override public final void setConfiguration(C configuration) {
+        //if (this.configuration != null) throw new IllegalStateException("The value editor '"+this+"' has already been configured!");
         if (configuration == null) throw new IllegalStateException("The configuration can not be null");
 
         this.configuration = configuration;
     }
 
-    public final T getConfiguration() {
+    public final C getConfiguration() {
         return configuration;
     }
 
-    @Override public final Object getEditedValue() {
+    @Override public final T getValue() {
         return editedValue;
     }
 
     // NOTE: This is only called from outside the editor.
-    @Override public final void setEditedValue(Object newValue) {
+    @Override public final void setValue(T newValue) {
         editedValue = newValue;
 
         if (isUiCreated() && !sendingEditUpdate) {
@@ -76,15 +82,15 @@ public abstract class ValueEditorBase<T extends EditorConfiguration> extends Flo
      * @param uiContext context class with things such as the skin used and other settings.
      * @return editor UI.
      */
-    protected abstract Actor createEditor(T configuration, UiContext uiContext);
+    protected abstract Actor createEditor(C configuration, UiContext uiContext);
 
     /**
      * Should be called when the value is changed in the UI.
      */
-    protected final void notifyValueEdited(Object newValue) {
+    protected final void notifyValueEdited(T newValue) {
         if (enabled) {
             sendingEditUpdate = true;
-            setEditedValue(newValue);
+            setValue(newValue);
             notifyValueEdited();
             sendingEditUpdate = false;
         }
@@ -93,14 +99,14 @@ public abstract class ValueEditorBase<T extends EditorConfiguration> extends Flo
     /**
      * Called when the value to be edited is changed from outside the editor, and the UI should update.
      */
-    protected abstract void updateEditedValue(Object value);
+    protected abstract void updateEditedValue(T value);
 
     /**
      * Called when the disabled/enabled state of the editor is changed.
      */
     protected abstract void setDisabled(boolean disabled);
 
-    @Override public final void addListener(ValueEditorListener listener) {
+    @Override public final void addListener(EditorListener<T> listener) {
         if (listener == null) throw new IllegalArgumentException("Listener should not be null");
 
         if (!listeners.contains(listener)) {
@@ -108,7 +114,7 @@ public abstract class ValueEditorBase<T extends EditorConfiguration> extends Flo
         }
     }
 
-    @Override public final void removeListener(ValueEditorListener listener) {
+    @Override public final void removeListener(EditorListener<T> listener) {
         listeners.remove(listener);
     }
 
@@ -116,7 +122,7 @@ public abstract class ValueEditorBase<T extends EditorConfiguration> extends Flo
      * Notifies all listeners that the value has been edited.
      */
     private void notifyValueEdited() {
-        for (ValueEditorListener listener : listeners) {
+        for (EditorListener<T> listener : listeners) {
             listener.onValueEdited(this, editedValue);
         }
     }
