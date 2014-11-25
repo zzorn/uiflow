@@ -88,7 +88,7 @@ public class UiFlowExample extends ApplicationAdapter {
         testBean.addString("Name", "Igor");
         testBean.addDouble("Hitpoints", 24, 0, 1000, false, true, ColorGradient.RED_YELLOW);
         testBean.addDouble("Balance", 24, -100, 0, 100, false, true, ColorGradient.RED_GREEN_RED);
-        testBean.addDouble("Balance2", 12, -10000, 0, 10000, true, true);
+        testBean.addDouble("Balance2", 12, -10000, 0, 10000, true, true, ColorGradient.RED_GREEN_RED);
         testBean.addInt("Inventory Slots", 16, 0, 100, false, false);
         testBean.addString("Favourite Foods", "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs", 4);
 
