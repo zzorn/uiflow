@@ -50,7 +50,7 @@ public class UiFlowExample extends ApplicationAdapter {
         // Create UI elements
         final Bean testBean = createTestBean();
         BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT);
-        beanEditor.setBean(testBean);
+        beanEditor.setValue(testBean);
         rootTable.add(beanEditor.getUi(uiContext));
 
         rootTable.layout();
@@ -105,39 +105,39 @@ public class UiFlowExample extends ApplicationAdapter {
     private BeanListener createdebugPrintListener() {
         return new BeanListener() {
             @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
-                System.out.println("UiFlowExample.onValueChanged");
-                System.out.println("bean = " + bean);
-                System.out.println("property = " + property.getName());
-                System.out.println("newValue = " + newValue);
+                System.out.println("onValueChanged");
+                System.out.println("  bean = " + bean);
+                System.out.println("  property = " + property.getName());
+                System.out.println("  newValue = " + newValue);
             }
 
             @Override public void onValueEditorChanged(Bean bean, Property property) {
-                System.out.println("UiFlowExample.onValueEditorChanged");
-                System.out.println("bean = " + bean);
-                System.out.println("property = " + property);
+                System.out.println("onValueEditorChanged");
+                System.out.println("  bean = " + bean);
+                System.out.println("  property = " + property);
             }
 
             @Override public void onPropertyChanged(Bean bean, Property property) {
-                System.out.println("UiFlowExample.onPropertyChanged");
-                System.out.println("bean = " + bean);
-                System.out.println("property = " + property);
+                System.out.println("onPropertyChanged");
+                System.out.println("  bean = " + bean);
+                System.out.println("  property = " + property);
             }
 
             @Override public void onChanged(Bean bean) {
-                System.out.println("UiFlowExample.onChanged");
-                System.out.println("bean = " + bean);
+                System.out.println("onChanged");
+                System.out.println("  bean = " + bean);
             }
 
             @Override public void onPropertyAdded(Bean bean, Property property) {
-                System.out.println("UiFlowExample.onPropertyAdded");
-                System.out.println("bean = " + bean);
-                System.out.println("property = " + property);
+                System.out.println("onPropertyAdded");
+                System.out.println("  bean = " + bean);
+                System.out.println("  property = " + property);
             }
 
             @Override public void onPropertyRemoved(Bean bean, Property property) {
-                System.out.println("UiFlowExample.onPropertyRemoved");
-                System.out.println("bean = " + bean);
-                System.out.println("property = " + property);
+                System.out.println("onPropertyRemoved");
+                System.out.println("  bean = " + bean);
+                System.out.println("  property = " + property);
             }
         };
     }

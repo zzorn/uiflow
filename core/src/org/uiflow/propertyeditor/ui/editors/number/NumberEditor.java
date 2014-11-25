@@ -52,6 +52,8 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
 
     private DecimalFormat decimalFormat = new DecimalFormat("0.0########");
 
+    private boolean numberFieldUpdating;
+
     private final InputListener scrollWheelListener = new ScrollInputListener() {
         @Override public boolean scrolled(InputEvent event, float x, float y, int amount) {
             if (amount != 0) {
@@ -61,7 +63,21 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
         }
     };
 
-    private boolean numberFieldUpdating;
+    private final TextFieldChangeListener numberFieldListener = new TextFieldChangeListener() {
+        @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
+            Number value = parseNumberFromText(getConfiguration().getNumberType(), newValue);
+
+            setErrorStyle(getUiContext(), value == null);
+
+            if (value != null) {
+                numberFieldUpdating = true;
+                updateValueInUi(value);
+                notifyValueEdited(value);
+                numberFieldUpdating = false;
+            }
+            return false;
+        }
+    };
 
     public NumberEditor() {
         this(NumberEditorConfiguration.DOUBLE_DEFAULT);
@@ -120,7 +136,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                 Number value = convertToCorrectNumberType(configuration.getNumberType(), newValue);
 
                 // Update the rest of the UI
-                updateEditedValue(value);
+                updateValueInUi(value);
 
                 // Notify listeners
                 notifyValueEdited(value);
@@ -137,21 +153,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
             table.add(slider).height(numberField.getHeight()).fill().expand();//.padLeft(uiContext.getSmallGap());
         }
 
-        numberField.addListener(new TextFieldChangeListener() {
-            @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
-                Number value = parseNumberFromText(configuration.getNumberType(), newValue);
-
-                setErrorStyle(uiContext, value == null);
-
-                if (value != null) {
-                    numberFieldUpdating = true;
-                    updateEditedValue(value);
-                    notifyValueEdited(value);
-                    numberFieldUpdating = false;
-                }
-                return false;
-            }
-        });
+        numberField.addListener(numberFieldListener);
 
         return table;
     }
@@ -301,7 +303,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                 else throw new IllegalStateException("Unsupported number type in number field: " + numberType);
 
                 // Update the rest of the UI
-                updateEditedValue(result);
+                updateValueInUi(result);
 
                 // Notify listeners
                 notifyValueEdited(result);
@@ -346,7 +348,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                 result = convertToCorrectNumberType(numberType, resultAsDouble);
 
                 // Update the rest of the UI
-                updateEditedValue(result);
+                updateValueInUi(result);
 
                 // Notify listeners
                 notifyValueEdited(result);
@@ -373,7 +375,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                numberType == Long.class;
     }
 
-    @Override protected void updateEditedValue(Number value) {
+    @Override protected void updateValueInUi(Number value) {
         final String valueAsText;
         if (value instanceof Double ||
             value instanceof Float ) {
@@ -384,7 +386,10 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
             valueAsText = "" + value;
         }
 
-        if (!numberFieldUpdating) numberField.setText(valueAsText);
+        if (!numberFieldUpdating) {
+            numberField.setText(valueAsText);
+            numberFieldListener.setPreviousText(valueAsText);
+        }
 
         if (value != null) slider.setValue(value.floatValue());
     }

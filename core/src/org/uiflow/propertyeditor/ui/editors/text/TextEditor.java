@@ -13,6 +13,13 @@ public class TextEditor extends EditorBase<String, TextEditorConfiguration> {
 
     private TextField textWidget;
 
+    private final TextFieldChangeListener textFieldChangeListener = new TextFieldChangeListener(){
+        @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
+            notifyValueEdited(newValue);
+            return false;
+        }
+    };
+
     public TextEditor() {
         this(TextEditorConfiguration.DEFAULT);
     }
@@ -21,9 +28,10 @@ public class TextEditor extends EditorBase<String, TextEditorConfiguration> {
         super(configuration);
     }
 
-    @Override protected void updateEditedValue(String value) {
+    @Override protected void updateValueInUi(String value) {
         String text = value == null ? "" : value;
         textWidget.setText(text);
+        textFieldChangeListener.setPreviousText(text);
     }
 
     @Override protected void setDisabled(boolean disabled) {
@@ -46,12 +54,7 @@ public class TextEditor extends EditorBase<String, TextEditorConfiguration> {
         table.add(textWidget).expandX().fillX();
 
         // When textfield content is edited, update the value.
-        textWidget.addListener(new TextFieldChangeListener(){
-            @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
-                notifyValueEdited(newValue);
-                return false;
-            }
-        });
+        textWidget.addListener(textFieldChangeListener);
 
         return table;
     }

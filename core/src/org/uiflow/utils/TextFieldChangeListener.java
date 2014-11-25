@@ -130,4 +130,17 @@ public abstract class TextFieldChangeListener extends InputListener {
         return actor.getStage() != null &&
                actor.getStage().getKeyboardFocus() == actor;
     }
+
+    /**
+     * @param previousText the text in the text field before any changes.
+     *                     Call this when the text field is updated from outside the UI,
+     *                     so that the UI will not fire a change event when the text field is selected the next time.
+     */
+    public void setPreviousText(String previousText) {
+        this.previousText = previousText;
+    }
+
+    public String getPreviousText() {
+        return previousText;
+    }
 }

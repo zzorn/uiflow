@@ -41,15 +41,20 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
         return editedValue;
     }
 
-    // NOTE: This is only called from outside the editor.
     @Override public final void setValue(T newValue) {
-        editedValue = newValue;
+        if (editedValue != newValue) {
+            T oldValue = editedValue;
+            editedValue = newValue;
 
-        System.out.println("EditorBase.setValue");
-        System.out.println("  newValue = " + newValue);
+            onValueChanged(oldValue, editedValue);
 
+            updateUiIfNeeded();
+        }
+    }
+
+    private void updateUiIfNeeded() {
         if (isUiCreated() && !sendingEditUpdate) {
-            updateEditedValue(newValue);
+            updateValueInUi(editedValue);
         }
     }
 
@@ -74,12 +79,17 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
         final Actor editor = createEditor(configuration, uiContext);
 
         // Update value and state
-        System.out.println("EditorBase.createUi");
-        System.out.println("  editedValue = " + editedValue);
-        updateEditedValue(editedValue);
+        updateValueInUi(editedValue);
         if (!enabled) setDisabled(true);
 
         return editor;
+    }
+
+    /**
+     * Called when the edited value is changed from client code.
+     * Can be used to e.g. register and unregister listeners on the value.
+     */
+    protected void onValueChanged(T oldValue, T newValue) {
     }
 
     /**
@@ -95,8 +105,16 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
     protected final void notifyValueEdited(T newValue) {
         if (enabled) {
             sendingEditUpdate = true;
-            setValue(newValue);
+
+            if (newValue != editedValue) {
+                setValue(newValue);
+            }
+            else {
+                updateUiIfNeeded();
+            }
+
             notifyValueEdited();
+
             sendingEditUpdate = false;
         }
     }
@@ -104,7 +122,7 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
     /**
      * Called when the value to be edited is changed from outside the editor, and the UI should update.
      */
-    protected abstract void updateEditedValue(T value);
+    protected abstract void updateValueInUi(T value);
 
     /**
      * Called when the disabled/enabled state of the editor is changed.

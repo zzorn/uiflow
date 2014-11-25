@@ -14,17 +14,12 @@ import org.uiflow.propertyeditor.ui.editors.EditorBase;
 import java.util.*;
 
 /**
- *
+ * An editor UI for Bean instances.
  */
 public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
     private final LinkedHashMap<Property, PropertyUi> propertyEditors = new LinkedHashMap<Property, PropertyUi>();
-    private Bean bean;
-    private Table beanTable;
     private Table propertyList;
-
-    private transient float lastMaxLabelWidth = 0;
-
 
     private final BeanListener beanListener = new BeanListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
@@ -35,12 +30,9 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         }
 
         @Override public void onPropertyChanged(Bean bean, Property property) {
-            // Layout in case it didn't already
-            propertyList.layout();
         }
 
         @Override public void onChanged(Bean bean) {
-            updateUi();
             notifyValueEdited(bean);
         }
 
@@ -82,37 +74,22 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         super(new BeanEditorConfiguration(labelLocation));
     }
 
-    public Bean getBean() {
-        return bean;
-    }
+    @Override protected void onValueChanged(Bean oldValue, Bean newValue) {
+        if (oldValue != null) {
+            oldValue.removeListener(beanListener);
+        }
 
-    public void setBean(Bean bean) {
-        System.out.println("BeanEditor.setBean");
-        System.out.println("  bean = " + bean);
-        if (bean != this.bean) {
-            if (this.bean != null) {
-                this.bean.removeListener(beanListener);
-            }
-
-            this.bean = bean;
-            setValue(bean);
-
-            if (this.bean != null) {
-                this.bean.addListener(beanListener);
-            }
-
-            updateUi();
+        if (newValue != null) {
+            newValue.addListener(beanListener);
         }
     }
 
-    @Override protected void updateEditedValue(Bean value) {
-        System.out.println("BeanEditor.updateEditedValue");
-        System.out.println("  value = " + value);
-        setBean(value);
+    @Override protected void updateValueInUi(Bean value) {
+        updateUi();
     }
 
     @Override protected Actor createEditor(BeanEditorConfiguration configuration, UiContext uiContext) {
-        beanTable = new Table(uiContext.getSkin());
+        Table beanTable = new Table(uiContext.getSkin());
         beanTable.setBackground("window_titled");
 
         // Name label
@@ -131,20 +108,20 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         return beanTable;
     }
 
+    @Override protected void setDisabled(boolean disabled) {
+        for (PropertyUi propertyUi : propertyEditors.values()) {
+            propertyUi.setDisabled(disabled);
+        }
+    }
+
     private void updateUi() {
         if (isUiCreated()) {
             // Update name
-            final Bean bean = getBean();
+            final Bean bean = getValue();
             String name = bean == null ? "" : bean.getName();
             nameLabel.setText(name);
 
             updateAvailablePropertyUis();
-        }
-    }
-
-    @Override protected void setDisabled(boolean disabled) {
-        for (PropertyUi propertyUi : propertyEditors.values()) {
-            propertyUi.setDisabled(disabled);
         }
     }
 
@@ -156,6 +133,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
         boolean propertiesAddedOrRemoved = false;
 
+        Bean bean = getValue();
         if (bean == null && !propertyEditors.isEmpty()) {
             // Bean is null, remove all property uis
             propertiesToRemove = new ArrayList<Property>(propertyEditors.keySet());
