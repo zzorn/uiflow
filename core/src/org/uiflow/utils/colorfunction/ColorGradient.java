@@ -22,7 +22,8 @@ public class ColorGradient implements ColorFunction {
 
     private final TreeMap<Double, Color> colors = new TreeMap<Double, Color>();
 
-    public static final ColorGradient GREYSCALE = new ColorGradient(Color.BLACK, Color.WHITE);
+    // Some built-in gradients
+    public static final ColorGradient GRAY_SCALE = new ColorGradient(Color.BLACK, Color.WHITE);
     public static final ColorGradient COMPUTER_COLORS = new ColorGradient(Color.BLUE, Color.CYAN, Color.GREEN, Color.YELLOW, Color.RED, Color.MAGENTA);
     public static final ColorGradient SPECTRUM = new ColorGradient(Color.BLACK, Color.BLUE, NICE_GREEN, Color.YELLOW, Color.ORANGE, Color.RED);
     public static final ColorGradient RED_YELLOW = new ColorGradient(Color.RED, Color.ORANGE, Color.YELLOW);
