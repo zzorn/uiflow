@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.model;
+package org.uiflow.propertyeditor.model.bean;
 
 import java.util.LinkedHashSet;
 import java.util.Set;

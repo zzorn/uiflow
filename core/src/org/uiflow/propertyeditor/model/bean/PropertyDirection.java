@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.model;
+package org.uiflow.propertyeditor.model.bean;
 
 /**
  * Whether a property can be used as an input, output, or both.

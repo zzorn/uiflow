@@ -1,14 +1,13 @@
 package org.uiflow.propertyeditor.ui.editors.bean;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.model.Bean;
-import org.uiflow.propertyeditor.model.BeanListener;
-import org.uiflow.propertyeditor.model.Property;
+import org.uiflow.propertyeditor.model.bean.Bean;
+import org.uiflow.propertyeditor.model.bean.BeanListener;
+import org.uiflow.propertyeditor.model.bean.Property;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 
 import java.util.*;

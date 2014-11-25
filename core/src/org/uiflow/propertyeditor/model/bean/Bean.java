@@ -1,4 +1,6 @@
-package org.uiflow.propertyeditor.model;
+package org.uiflow.propertyeditor.model.bean;
+
+import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
 
 import java.util.List;
 
@@ -27,4 +29,13 @@ public interface Bean {
      */
     void removeListener(BeanListener listener);
 
+    /**
+     * @param graph the graph that this bean is contained in, or null for none
+     */
+    void setGraph(BeanGraph graph);
+
+    /**
+     * @return the graph that this bean is contained in, or null for none
+     */
+    BeanGraph getGraph();
 }

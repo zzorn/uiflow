@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.model;
+package org.uiflow.propertyeditor.model.bean;
 
 /**
  * Listens to changes in a bean and the properties in it.

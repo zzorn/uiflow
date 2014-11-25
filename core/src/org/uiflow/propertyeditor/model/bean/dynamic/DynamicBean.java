@@ -1,9 +1,9 @@
-package org.uiflow.propertyeditor.model.dynamic;
+package org.uiflow.propertyeditor.model.bean.dynamic;
 
-import org.uiflow.propertyeditor.model.Bean;
-import org.uiflow.propertyeditor.model.BeanBase;
-import org.uiflow.propertyeditor.model.Property;
-import org.uiflow.propertyeditor.model.PropertyDirection;
+import org.uiflow.propertyeditor.model.bean.Bean;
+import org.uiflow.propertyeditor.model.bean.BeanBase;
+import org.uiflow.propertyeditor.model.bean.Property;
+import org.uiflow.propertyeditor.model.bean.PropertyDirection;
 import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
 import org.uiflow.propertyeditor.ui.editors.bean.BeanEditorConfiguration;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;

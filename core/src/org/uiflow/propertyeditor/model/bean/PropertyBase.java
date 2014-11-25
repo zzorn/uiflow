@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.model;
+package org.uiflow.propertyeditor.model.bean;
 
 import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
 
