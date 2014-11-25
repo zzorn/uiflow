@@ -322,7 +322,6 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
     protected final void scaleValue(double scaling, boolean invertScalingForNegativeValues, int roundToNSignificantNumbers, boolean forceChange) {
         if (scaling != 1) {
             final Number editedValue = getValue();
-            System.out.println("editedValue = " + editedValue);
             if (editedValue != null) {
                 Number result;
 
@@ -336,7 +335,6 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
 
                 // Round result to remove excessive decimals
                 double resultAsDouble = MathUtils.roundToNDigits(scaling * editedValue.doubleValue(), roundToNSignificantNumbers);
-                System.out.println("resultAsDouble = " + resultAsDouble);
 
                 // Check if we should move at least one, to avoid getting stuck on a low integer value when scaling
                 if (forceChange && isIntegerType(numberType) && editedValue.longValue() == (long)resultAsDouble) {
