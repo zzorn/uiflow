@@ -9,6 +9,7 @@ import org.uiflow.propertyeditor.ui.editors.bean.BeanEditorConfiguration;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
 import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
 import org.uiflow.propertyeditor.ui.editors.text.TextEditorConfiguration;
+import org.uiflow.utils.colorfunction.ColorFunction;
 
 import java.util.*;
 
@@ -176,6 +177,20 @@ public class DynamicBean extends BeanBase {
      * @param name name of the property
      * @param value initial value for the property
      * @param min minimum value for the property (inclusive)
+     * @param origin value at center of range
+     * @param max maximum value for the property (inclusive)
+     * @return the added property
+     */
+    public Property addDouble(String name, double value, double origin, double min, double max) {
+        return addProperty(name, value, new NumberEditorConfiguration(Double.class, min, origin, max));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
      * @param max maximum value for the property (inclusive)
      * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
      * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
@@ -185,6 +200,61 @@ public class DynamicBean extends BeanBase {
         return addProperty(name,
                            value,
                            new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param max maximum value for the property (inclusive)
+     * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
+     * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
+     * @param colorFunction used to color the slider bar with depending on the value.  -1 = min value, 1 = max value.
+     * @return the added property
+     */
+    public Property addDouble(String name, double value, double min, double max, boolean enforceRange, boolean logarithmic, ColorFunction colorFunction) {
+        return addProperty(name,
+                           value,
+                           new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic, true, true, colorFunction));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param origin value at center of range
+     * @param max maximum value for the property (inclusive)
+     * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
+     * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
+     * @return the added property
+     */
+    public Property addDouble(String name, double value, double min, double origin, double max, boolean enforceRange, boolean logarithmic) {
+        return addProperty(name,
+                           value,
+                           new NumberEditorConfiguration(Double.class, min, origin, max, enforceRange, logarithmic));
+    }
+
+    /**
+     * Adds a new double type property to this bean.
+     *
+     * @param name name of the property
+     * @param value initial value for the property
+     * @param min minimum value for the property (inclusive)
+     * @param origin value at center of range
+     * @param max maximum value for the property (inclusive)
+     * @param enforceRange true if minimum and maximum value are enforced, if false they are only used to restrict the slider, but the number editor still allows inputting out of range values.
+     * @param logarithmic if true the slider will use a logarithmic scale instead of linear scale.
+     * @param colorFunction used to color the slider bar with depending on the value.  -1 = min value, 0 = origin, 1 = max value.
+     * @return the added property
+     */
+    public Property addDouble(String name, double value, double min, double origin, double max, boolean enforceRange, boolean logarithmic, ColorFunction colorFunction) {
+        return addProperty(name,
+                           value,
+                           new NumberEditorConfiguration(Double.class, min, origin, max, enforceRange, logarithmic, true, true, true, colorFunction));
     }
 
     /**

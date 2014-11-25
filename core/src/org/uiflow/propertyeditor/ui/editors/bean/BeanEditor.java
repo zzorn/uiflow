@@ -87,12 +87,15 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     }
 
     public void setBean(Bean bean) {
+        System.out.println("BeanEditor.setBean");
+        System.out.println("  bean = " + bean);
         if (bean != this.bean) {
             if (this.bean != null) {
                 this.bean.removeListener(beanListener);
             }
 
             this.bean = bean;
+            setValue(bean);
 
             if (this.bean != null) {
                 this.bean.addListener(beanListener);
@@ -103,6 +106,8 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     }
 
     @Override protected void updateEditedValue(Bean value) {
+        System.out.println("BeanEditor.updateEditedValue");
+        System.out.println("  value = " + value);
         setBean(value);
     }
 
@@ -130,7 +135,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         if (isUiCreated()) {
             // Update name
             final Bean bean = getBean();
-            String name = bean == null ? "No Bean" : bean.getName();
+            String name = bean == null ? "" : bean.getName();
             nameLabel.setText(name);
 
             updateAvailablePropertyUis();

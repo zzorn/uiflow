@@ -14,6 +14,7 @@ import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
 import org.uiflow.propertyeditor.ui.editors.text.TextEditorConfiguration;
 import org.uiflow.propertyeditor.ui.editors.bean.BeanEditor;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
+import org.uiflow.utils.colorfunction.ColorGradient;
 
 public class UiFlowExample extends ApplicationAdapter {
 
@@ -52,6 +53,8 @@ public class UiFlowExample extends ApplicationAdapter {
         beanEditor.setBean(testBean);
         rootTable.add(beanEditor.getUi(uiContext));
 
+        rootTable.layout();
+
         // Print changes
         testBean.addListener(createdebugPrintListener());
 	}
@@ -83,13 +86,15 @@ public class UiFlowExample extends ApplicationAdapter {
     private Bean createTestBean() {
         final DynamicBean testBean = new DynamicBean("Troll");
         testBean.addString("Name", "Igor");
-        testBean.addDouble("Hitpoints", 24, 0, 1000, false, true);
+        testBean.addDouble("Hitpoints", 24, 0, 1000, false, true, ColorGradient.RED_YELLOW);
+        testBean.addDouble("Balance", 24, -100, 0, 100, false, true, ColorGradient.RED_GREEN_RED);
+        testBean.addDouble("Balance2", 12, -10000, 0, 10000, true, true);
         testBean.addInt("Inventory Slots", 16, 0, 100, false, false);
         testBean.addString("Favourite Foods", "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs", 4);
 
         DynamicBean appearance = new DynamicBean("Appearance");
-        appearance.addString("Hat");
-        appearance.addDouble("Height");
+        appearance.addString("Hat", "Top Hat");
+        appearance.addDouble("Height", 5, 0, 10, true, false, ColorGradient.BLUE_RED);
         appearance.addString("Color");
         testBean.addBean("Appearance", appearance, LabelLocation.LEFT);
 

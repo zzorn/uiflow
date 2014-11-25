@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.Scaling;
 import org.uiflow.UiContext;
+import org.uiflow.utils.ScrollInputListener;
 import org.uiflow.utils.TextFieldChangeListener;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 import org.uiflow.propertyeditor.ui.widgets.FlowSlider;
@@ -51,18 +52,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
 
     private DecimalFormat decimalFormat = new DecimalFormat("0.0########");
 
-    private final InputListener scrollWheelListener = new InputListener() {
-
-        @Override public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-            // Tell the stage that yes, we do want to receive scroll events (why can't it send them by default?)...
-            getUiContext().getStage().setScrollFocus(event.getTarget());
-        }
-
-        @Override public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-            // Don't receive scroll events when cursor outside component
-            getUiContext().getStage().setScrollFocus(null);
-        }
-
+    private final InputListener scrollWheelListener = new ScrollInputListener() {
         @Override public boolean scrolled(InputEvent event, float x, float y, int amount) {
             if (amount != 0) {
                 changeValue(-amount);
@@ -70,6 +60,8 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
             return true;
         }
     };
+
+    private boolean numberFieldUpdating;
 
     public NumberEditor() {
         this(NumberEditorConfiguration.DOUBLE_DEFAULT);
@@ -111,11 +103,14 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
         numberFieldContainer.width(width);
 
         // Create slider
-        slider = new FlowSlider(configuration.getMinValue(),
+        slider = new FlowSlider(uiContext.getSkin(),
+                                configuration.getColorFunction(),
+                                configuration.getMinValue(),
                                 configuration.getMaxValue(),
-                                calculateStepSize(configuration),
-                                false, 0, 0, uiContext.getSkin());
-        slider.addListener(scrollWheelListener);
+                                configuration.isEnforceRange(),
+                                configuration.isLogarithmic(),
+                                configuration.isUseOrigin(),
+                                configuration.getOriginValue());
         slider.addListener(new FlowSlider.FlowSliderListener() {
             @Override public void onChanged(double newValue) {
                 // Drop last digits, as the slider is not very precise
@@ -148,7 +143,12 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
 
                 setErrorStyle(uiContext, value == null);
 
-                if (value != null) notifyValueEdited(value);
+                if (value != null) {
+                    numberFieldUpdating = true;
+                    updateEditedValue(value);
+                    notifyValueEdited(value);
+                    numberFieldUpdating = false;
+                }
                 return false;
             }
         });
@@ -384,7 +384,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
             valueAsText = "" + value;
         }
 
-        numberField.setText(valueAsText);
+        if (!numberFieldUpdating) numberField.setText(valueAsText);
 
         if (value != null) slider.setValue(value.floatValue());
     }

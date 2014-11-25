@@ -45,6 +45,9 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
     @Override public final void setValue(T newValue) {
         editedValue = newValue;
 
+        System.out.println("EditorBase.setValue");
+        System.out.println("  newValue = " + newValue);
+
         if (isUiCreated() && !sendingEditUpdate) {
             updateEditedValue(newValue);
         }
@@ -71,6 +74,8 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
         final Actor editor = createEditor(configuration, uiContext);
 
         // Update value and state
+        System.out.println("EditorBase.createUi");
+        System.out.println("  editedValue = " + editedValue);
         updateEditedValue(editedValue);
         if (!enabled) setDisabled(true);
 

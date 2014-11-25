@@ -2,6 +2,7 @@
 com.badlogic.gdx.graphics.Color: {
 	green: { a: 1, b: 0, g: 1, r: 0 },
     amber: { a: 1, b: 0.6, g: 0.8, r: 1 },
+    dark_amber: { a: 1, b: 0.2, g: 0.5, r: 0.7 },
     selection_color: { a: 1, b: 0.1, g: 0.4, r: 0.9 },
 	white: { a: 1, b: 1, g: 1, r: 1 },
 	lightgrey: { a: 1, b: 0.75, g: 0.75, r: 0.75 },
@@ -36,8 +37,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
 	default-vertical: { background: slider, knob: button_up, knobBefore: selection}
 },
 org.uiflow.propertyeditor.ui.widgets.FlowSlider$FlowSliderStyle: {
-	default-horizontal: { background: slider, knob: button_up, knobBefore: selection},
-	default-vertical: { background: slider, knob: button_up, knobBefore: selection}
+	default: { background: slider, handle: button_up, value: slider_fill, defaultValueColor: dark_amber },
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: default-font, fontColor: lightgrey },
