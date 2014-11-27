@@ -9,7 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 /**
  * An ImageButton that actually honors and uses its color attribute.
  */
-public class ColoredImageButton extends ImageButton {
+public class ConnectorButton extends ImageButton {
 
     private float offsetX;
     private float offsetY;
@@ -17,37 +17,37 @@ public class ColoredImageButton extends ImageButton {
     private float prefW = -1;
     private float prefH = -1;
 
-    public ColoredImageButton(Skin skin) {
+    public ConnectorButton(Skin skin) {
         super(skin);
     }
 
-    public ColoredImageButton(Skin skin, String styleName) {
+    public ConnectorButton(Skin skin, String styleName) {
         super(skin, styleName);
     }
 
-    public ColoredImageButton(ImageButtonStyle style) {
+    public ConnectorButton(ImageButtonStyle style) {
         super(style);
     }
 
-    public ColoredImageButton(Drawable imageUp) {
+    public ConnectorButton(Drawable imageUp) {
         super(imageUp);
     }
 
-    public ColoredImageButton(Drawable image, float offsetX, float offsetY) {
+    public ConnectorButton(Drawable image, float offsetX, float offsetY) {
         super(image);
 
         this.offsetX = offsetX;
         this.offsetY = offsetY;
     }
 
-    public ColoredImageButton(Drawable imageUp,
-                              Drawable imageDown) {
+    public ConnectorButton(Drawable imageUp,
+                           Drawable imageDown) {
         super(imageUp, imageDown);
     }
 
-    public ColoredImageButton(Drawable imageUp,
-                              Drawable imageDown,
-                              Drawable imageChecked) {
+    public ConnectorButton(Drawable imageUp,
+                           Drawable imageDown,
+                           Drawable imageChecked) {
         super(imageUp, imageDown, imageChecked);
     }
 

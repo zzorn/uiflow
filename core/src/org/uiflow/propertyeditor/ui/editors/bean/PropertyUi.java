@@ -1,9 +1,7 @@
 package org.uiflow.propertyeditor.ui.editors.bean;
 
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.utils.Scaling;
 import org.uiflow.UiContext;
@@ -13,7 +11,7 @@ import org.uiflow.propertyeditor.model.bean.PropertyDirection;
 import org.uiflow.propertyeditor.model.bean.PropertyListener;
 import org.uiflow.propertyeditor.ui.editors.Editor;
 import org.uiflow.propertyeditor.ui.editors.EditorListener;
-import org.uiflow.propertyeditor.ui.widgets.ColoredImageButton;
+import org.uiflow.propertyeditor.ui.widgets.ConnectorButton;
 import org.uiflow.widgets.FlowWidgetBase;
 
 /**
@@ -42,7 +40,7 @@ public class PropertyUi extends FlowWidgetBase {
         }
     };
     private final PropertyListener propertyListener = new PropertyListener() {
-        @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+        @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
             if (editor != null) {
                 editor.setValue(property.getValue());
             }
@@ -57,12 +55,13 @@ public class PropertyUi extends FlowWidgetBase {
             updateUi();
         }
 
-        @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
+        @Override public void onSourceChanged(Bean bean, Property property, Property oldSource, Property newSource) {
             updateUi();
         }
     };
-    private Actor inputConnector;
-    private Actor outputConnector;
+
+    private ConnectorButton inputConnector;
+    private ConnectorButton outputConnector;
 
     /**
      */
@@ -131,11 +130,11 @@ public class PropertyUi extends FlowWidgetBase {
         return labelContainer;
     }
 
-    public Actor getInputConnector() {
+    public ConnectorButton getInputConnector() {
         return inputConnector;
     }
 
-    public Actor getOutputConnector() {
+    public ConnectorButton getOutputConnector() {
         return outputConnector;
     }
 
@@ -173,13 +172,13 @@ public class PropertyUi extends FlowWidgetBase {
         return table;
     }
 
-    private Actor createConnector(UiContext uiContext, boolean isInput) {
+    private ConnectorButton createConnector(UiContext uiContext, boolean isInput) {
         // Get connector icon
         final Drawable connectorImage = uiContext.getSkin().getDrawable("connector");
 
         final float offset = connectorImage.getMinWidth() / 2 - 2;
         final float xOffset = isInput ? -offset : offset;
-        ColoredImageButton imageButton = new ColoredImageButton(connectorImage, xOffset, 0);
+        ConnectorButton imageButton = new ConnectorButton(connectorImage, xOffset, 0);
         imageButton.getImage().setScaling(Scaling.fill);
         imageButton.setPrefWidth(2);
 

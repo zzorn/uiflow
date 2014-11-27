@@ -18,8 +18,8 @@ public class DefaultBeanGraph implements BeanGraph {
     private final Set<BeanGraphListener> listeners = new HashSet<BeanGraphListener>();
 
     private final DynamicBean interfaceBean;
-    private final Bean internalInputBean;
-    private final Bean internalOutputBean;
+    private final BeanDelegate internalInputBean;
+    private final BeanDelegate internalOutputBean;
 
     public DefaultBeanGraph() {
         this(null);
@@ -36,13 +36,15 @@ public class DefaultBeanGraph implements BeanGraph {
         addBean(internalInputBean,  0.5f, 0);
     }
 
-    @Override public final void addBean(Bean bean, Vector2 position) {
+    @Override public final Bean addBean(Bean bean, Vector2 position) {
         Check.notNull(position, "position");
 
         addBean(bean, position.x, position.y);
+
+        return bean;
     }
 
-    @Override public final void addBean(Bean bean, float x, float y) {
+    @Override public final Bean addBean(Bean bean, float x, float y) {
         Check.notNull(bean, "bean");
         Check.notContained(bean, beansAndPositions.keySet(), "beans");
 
@@ -53,6 +55,8 @@ public class DefaultBeanGraph implements BeanGraph {
         // Notify derived classes and listeners
         onBeanAdded(bean, position);
         notifyBeanAdded(bean, position);
+
+        return bean;
     }
 
     @Override public final void removeBean(Bean bean) {
@@ -131,11 +135,11 @@ public class DefaultBeanGraph implements BeanGraph {
         return interfaceBean;
     }
 
-    @Override public Bean getInternalInputBean() {
+    @Override public BeanDelegate getInternalInputBean() {
         return internalInputBean;
     }
 
-    @Override public Bean getInternalOutputBean() {
+    @Override public BeanDelegate getInternalOutputBean() {
         return internalOutputBean;
     }
 
@@ -153,6 +157,10 @@ public class DefaultBeanGraph implements BeanGraph {
 
     @Override public final void removeListener(BeanListener listener) {
         interfaceBean.removeListener(listener);
+    }
+
+    @Override public Property getProperty(String propertyName) {
+        return interfaceBean.getProperty(propertyName);
     }
 
     /**

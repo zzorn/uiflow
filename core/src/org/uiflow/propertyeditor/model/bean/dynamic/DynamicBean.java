@@ -178,7 +178,11 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addDouble(String name, double value) {
-        return addProperty(name, Double.class, value, new NumberEditorConfiguration(Double.class), PropertyDirection.INOUT);
+        return addProperty(name,
+                           Double.class,
+                           value,
+                           new NumberEditorConfiguration(Double.class),
+                           PropertyDirection.INOUT);
     }
 
     /**
@@ -736,6 +740,18 @@ public class DynamicBean extends BeanBase implements MutableBean {
         properties.remove(property);
 
         notifyPropertyRemoved(property);
+    }
+
+    @Override public Property getProperty(String propertyName) {
+        if (propertyName == null) return null;
+
+        for (Property property : properties) {
+            if (propertyName.equals(property.getName())) {
+                return property;
+            }
+        }
+
+        return null;
     }
 
     @Override public String toString() {

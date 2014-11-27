@@ -127,9 +127,11 @@ public abstract class PropertyBase implements Property {
     public final void setSource(Property source) {
         checkSource(source);
 
+        Property oldSource = this.source;
+
         this.source = source;
 
-        notifyPropertyChanged();
+        notifySourceChanged(oldSource, this.source);
     }
 
 
@@ -151,8 +153,9 @@ public abstract class PropertyBase implements Property {
 
     @Override public final void setValue(Object value) {
         if (getValue() != value) {
+            Object oldValue = getValue();
             doSetValue(value);
-            notifyValueChanged(value);
+            notifyValueChanged(oldValue, value);
         }
     }
 
@@ -225,9 +228,18 @@ public abstract class PropertyBase implements Property {
     /**
      * Notifies all listeners that the value of this property has changed.
      */
-    protected final void notifyValueChanged(Object newValue) {
+    protected final void notifyValueChanged(Object oldValue, Object newValue) {
         for (PropertyListener listener : listeners) {
-            listener.onValueChanged(bean, this, newValue);
+            listener.onValueChanged(bean, this, oldValue, newValue);
+        }
+    }
+
+    /**
+     * Notifies all listeners that the source of this property has changed.
+     */
+    protected final void notifySourceChanged(Property oldSource, Property newSource) {
+        for (PropertyListener listener : listeners) {
+            listener.onSourceChanged(bean, this, oldSource, newSource);
         }
     }
 

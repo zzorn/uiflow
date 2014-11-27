@@ -2,6 +2,7 @@ package org.uiflow.propertyeditor.model.beangraph;
 
 import com.badlogic.gdx.math.Vector2;
 import org.uiflow.propertyeditor.model.bean.Bean;
+import org.uiflow.propertyeditor.model.bean.BeanDelegate;
 import org.uiflow.propertyeditor.model.bean.MutableBean;
 import org.uiflow.propertyeditor.model.bean.dynamic.DynamicBean;
 
@@ -19,14 +20,14 @@ public interface BeanGraph extends Bean {
      * @param position position in the graph to add the bean at.
      *                 A copy of this vector should be made, so the vector passed as a parameter can be modified later.
      */
-    void addBean(Bean bean, Vector2 position);
+    Bean addBean(Bean bean, Vector2 position);
 
     /**
      * @param bean bean to add to the graph.
      * @param x x coordinate to place the bean at in the graph.
      * @param y y coordinate to place the bean at in the graph.
      */
-    void addBean(Bean bean, float x, float y);
+    Bean addBean(Bean bean, float x, float y);
 
     /**
      * @param bean bean to remove from graph.
@@ -95,11 +96,11 @@ public interface BeanGraph extends Bean {
     /**
      * @return a bean containing internal inputs (external outputs).  Automatically added to the graph.
      */
-    Bean getInternalInputBean();
+    BeanDelegate getInternalInputBean();
 
     /**
      * @return a bean containing internal outputs (external inputs).  Automatically added to the graph.
      */
-    Bean getInternalOutputBean();
+    BeanDelegate getInternalOutputBean();
 
 }

@@ -62,15 +62,22 @@ public class UiFlowExample extends ApplicationAdapter {
         // Test bean graph
         BeanGraph beanGraph = new DefaultBeanGraph("Test Graph");
         beanGraph.addBean(createTestBean(), 40, 40);
-        beanGraph.addBean(createTestBean(), 340, 340);
-        beanGraph.addBean(createTestBean(), 740, 340);
-        beanGraph.getInterfaceBean().addFloat("x", 0, PropertyDirection.IN);
-        beanGraph.getInterfaceBean().addFloat("y", 0, PropertyDirection.IN);
-        beanGraph.getInterfaceBean().addDouble("result", 0, PropertyDirection.OUT);
+        final Bean beanA = beanGraph.addBean(createTestBean(), 340, 340);
+        final Bean beanB = beanGraph.addBean(createTestBean(), 740, 340);
+        final Property x = beanGraph.getInterfaceBean().addFloat("x", 0, PropertyDirection.IN);
+        final Property y = beanGraph.getInterfaceBean().addFloat("y", 0, PropertyDirection.IN);
+        final Property result = beanGraph.getInterfaceBean().addDouble("result", 0, PropertyDirection.OUT);
         beanGraph.getInterfaceBean().addFloat("tuning", 3.14f, PropertyDirection.INOUT);
         BeanGraphEditor beanGraphEditor = new BeanGraphEditor();
         beanGraphEditor.setValue(beanGraph);
         rootTable.add(beanGraphEditor.getUi(uiContext)).fill().expand();
+
+        beanA.getProperty("Balance").setSource(x);
+        beanA.getProperty("Balance2").set(y);
+        beanB.getProperty("Hitpoints").setSource(beanA.getProperty("Balance"));
+        beanB.getProperty("Inventory Slots").setSource(beanA.getProperty("Inventory Slots"));
+        beanA.getProperty("Favourite Foods").setSource(beanB.getProperty("Name"));
+        result.set(beanB.getProperty("Balance2"));
 
 	}
 
@@ -125,10 +132,11 @@ public class UiFlowExample extends ApplicationAdapter {
                 System.out.println("  bean = " + bean);
             }
 
-            @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+            @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
                 System.out.println("onValueChanged");
                 System.out.println("  bean = " + bean);
                 System.out.println("  property = " + property.getName());
+                System.out.println("  oldValue = " + oldValue);
                 System.out.println("  newValue = " + newValue);
             }
 
@@ -156,10 +164,11 @@ public class UiFlowExample extends ApplicationAdapter {
                 System.out.println("  property = " + property);
             }
 
-            @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
+            @Override public void onSourceChanged(Bean bean, Property property, Property oldSource, Property newSource) {
                 System.out.println("onSourceChanged");
                 System.out.println("  bean = " + bean);
                 System.out.println("  property = " + property);
+                System.out.println("  oldSource = " + oldSource);
                 System.out.println("  newSource = " + newSource);
             }
         };

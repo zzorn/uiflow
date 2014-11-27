@@ -35,4 +35,12 @@ public class BeanDelegate implements Bean {
     @Override public void removeListener(BeanListener listener) {
         delegate.removeListener(listener);
     }
+
+    @Override public Property getProperty(String propertyName) {
+        return delegate.getProperty(propertyName);
+    }
+
+    public Bean getDelegate() {
+        return delegate;
+    }
 }

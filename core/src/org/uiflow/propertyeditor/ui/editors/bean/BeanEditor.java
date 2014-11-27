@@ -5,10 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Align;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.model.bean.Bean;
-import org.uiflow.propertyeditor.model.bean.BeanListener;
-import org.uiflow.propertyeditor.model.bean.Property;
-import org.uiflow.propertyeditor.model.bean.PropertyDirection;
+import org.uiflow.propertyeditor.model.bean.*;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 
 import java.util.*;
@@ -28,12 +25,9 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     private Table beanTable;
     private Label nameLabel;
 
-    private final BeanListener beanListener = new BeanListener() {
-        @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+    private final BeanListener beanListener = new BeanListenerAdapter() {
+        @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
             notifyValueEdited(bean);
-        }
-
-        @Override public void onValueEditorChanged(Bean bean, Property property) {
         }
 
         @Override public void onBeanNameChanged(Bean bean) {
@@ -56,12 +50,6 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
                 rebuildPropertyList();
             }
             notifyValueEdited(bean);
-        }
-
-        @Override public void onPropertyChanged(Bean bean, Property property) {
-        }
-
-        @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
         }
     };
 
@@ -352,4 +340,10 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     }
 
 
+    /**
+     * @return the PropertyUi for the specified property, if found, null otherwise.
+     */
+    public PropertyUi getPropertyUi(Property property) {
+        return propertyEditors.get(property);
+    }
 }

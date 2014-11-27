@@ -8,17 +8,16 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import org.uiflow.UiContext;
-import org.uiflow.propertyeditor.model.bean.Bean;
-import org.uiflow.propertyeditor.model.bean.PropertyDirection;
+import org.uiflow.propertyeditor.model.bean.*;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraphListener;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 import org.uiflow.propertyeditor.ui.editors.bean.BeanEditor;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
+import org.uiflow.propertyeditor.ui.editors.bean.PropertyUi;
 import org.uiflow.utils.Check;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  *
@@ -35,10 +34,12 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private static final int DRAG_BUTTON = Input.Buttons.LEFT;
 
     private Table workArea;
+    private Table connectionLayer;
     private final Map<Container<Actor>, Bean> containersToBeans = new HashMap<Container<Actor>, Bean>();
     private final Map<Bean, Container<Actor>> beansToContainers = new HashMap<Bean, Container<Actor>>();
 
     private final Map<Bean, BeanEditor> beanEditors = new HashMap<Bean, BeanEditor>();
+    private final List<Connection> connections = new ArrayList<Connection>();
 
     private Bean draggedBean;
     private final Vector2 dragOffset = new Vector2();
@@ -54,6 +55,32 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
         @Override public void onBeanRemoved(BeanGraph beanGraph, Bean bean, Vector2 position) {
             removeBean(bean, position);
+        }
+    };
+
+    private final BeanListener connectionListener = new BeanListenerAdapter() {
+        @Override public void onPropertyAdded(Bean bean, Property property) {
+            if (property.getSource() != null) {
+                final PropertyUi sourceUi = getPropertyUi(property.getSource());
+                final PropertyUi targetUi = getPropertyUi(property);
+                addConnection(sourceUi, targetUi);
+            }
+        }
+
+        @Override public void onPropertyRemoved(Bean bean, Property property) {
+            removeConnectionsWith(property);
+        }
+
+        @Override public void onSourceChanged(Bean bean, Property property, Property oldSource, Property newSource) {
+            if (oldSource != null) {
+                removeConnection(oldSource, property);
+            }
+
+            if (newSource != null) {
+                final PropertyUi sourceUi = getPropertyUi(newSource);
+                final PropertyUi targetUi = getPropertyUi(property);
+                addConnection(sourceUi, targetUi);
+            }
         }
     };
 
@@ -98,11 +125,11 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         }
     };
 
-
-
     public BeanGraphEditor() {
         this(new BeanGraphConfiguration());
     }
+
+
 
     public BeanGraphEditor(BeanGraphConfiguration configuration) {
         super(configuration);
@@ -110,10 +137,22 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
     @Override protected Actor createEditor(BeanGraphConfiguration configuration, UiContext uiContext) {
         final Table table = new Table(uiContext.getSkin());
+        table.setBackground(uiContext.getSkin().getDrawable(EDITOR_BACKGROUND));
 
         workArea = new Table(uiContext.getSkin());
         workArea.setClip(true);
-        workArea.setBackground(uiContext.getSkin().getDrawable(EDITOR_BACKGROUND));
+
+        /*
+        connectionLayer = new Table(uiContext.getSkin());
+        connectionLayer.setClip(true);
+
+        // Stack the bean layer and connection layer on top of each other
+        Stack stack = new Stack();
+        stack.add(workArea);
+        stack.add(connectionLayer);
+        table.add(stack).fill().expand();
+        */
+        connectionLayer = workArea;
         table.add(workArea).fill().expand();
 
         // Listen to moves
@@ -141,7 +180,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
             oldValue.removeGraphListener(graphListener);
         }
 
-        rebuildGraphUi(newValue);
+        if (isUiCreated()) {
+            rebuildGraphUi(newValue);
+        }
 
         if (newValue != null) {
             newValue.addGraphListener(graphListener);
@@ -156,9 +197,13 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         for (BeanEditor beanEditor : beanEditors.values()) {
             beanEditor.dispose();
         }
+        for (Connection connection : connections) {
+            connectionLayer.removeActor(connection);
+        }
         beansToContainers.clear();
         containersToBeans.clear();
         beanEditors.clear();
+        connections.clear();
 
         // Add editors for beans in bean graph
         if (beanGraph != null) {
@@ -206,6 +251,14 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
             // Update editor UI position
             beanEditorUiContainer.setCenterPosition(position.x, position.y);
+
+            // Find new connections
+            for (Property target : bean.getProperties()) {
+                addConnection(target);
+            }
+
+            // Listen to connections made and removed
+            bean.addListener(connectionListener);
         }
     }
 
@@ -217,15 +270,39 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         if (isUiCreated()) {
             // Get editor UI
             final Container<Actor> ui = beansToContainers.get(bean);
-            ui.setCenterPosition(position.x, position.y);
+            // (Get rid of occasional artifacts by rounding coordinates to integers)
+            ui.setPosition((int) (position.x - ui.getWidth() * 0.5f),
+                           (int) (position.y - ui.getHeight() * 0.5f));
             ui.layout();
+
+            // Lift up bean and any connections connecting to it
+            moveToFront(bean);
+        }
+    }
+
+    /**
+     * Makes the specified bean topmost in the UI.
+     */
+    private void moveToFront(Bean bean) {
+        if (bean != null) {
+            // Lift connections
+            for (Connection connection : connections) {
+                if (bean.getProperties().contains(connection.getSourceProperty()) ||
+                    bean.getProperties().contains(connection.getTargetProperty())) {
+                    connection.toFront();
+                }
+            }
+
+            // Lift bean
+            final Container<Actor> ui = beansToContainers.get(bean);
             ui.toFront();
         }
     }
 
-
     private void removeBean(Bean bean, Vector2 position) {
         if (isUiCreated()) {
+            bean.removeListener(connectionListener);
+
             // Find editor
             final BeanEditor beanEditor = beanEditors.get(bean);
 
@@ -240,11 +317,94 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
                 containersToBeans.remove(container);
                 workArea.removeActor(container);
 
+                removeConnectionsWith(bean);
             }
         }
     }
 
+
+    private void addConnection(Property target) {
+        if (target != null) {
+            final Property source = target.getSource();
+            if (source != null) {
+                final PropertyUi sourceUi = getPropertyUi(source);
+                final PropertyUi targetUi = getPropertyUi(target);
+                addConnection(sourceUi, targetUi);
+            }
+        }
+    }
+
+    private void addConnection(PropertyUi source, PropertyUi target) {
+        if (source != null && target != null) {
+            final Connection connection = new Connection(getUiContext(), source, target);
+            connectionLayer.addActor(connection);
+            connections.add(connection);
+        }
+    }
+
+    private void removeConnection(Property source, Property target) {
+        for (Iterator<Connection> iterator = connections.iterator(); iterator.hasNext(); ) {
+            Connection connection = iterator.next();
+            if (connection.getSourceProperty() == source &&
+                connection.getTargetProperty() == target) {
+                iterator.remove();
+                connectionLayer.removeActor(connection);
+            }
+        }
+    }
+
+    private void removeConnectionsWith(Bean bean) {
+        for (Property property : bean.getProperties()) {
+            removeConnectionsWith(property);
+        }
+    }
+
+    private void removeConnectionsWith(Property removedProperty) {
+        // Remove all connections that connect to the removed property
+        for (Iterator<Connection> iterator = connections.iterator(); iterator.hasNext(); ) {
+            Connection connection = iterator.next();
+            if (connection.getSourceProperty() == removedProperty ||
+                connection.getTargetProperty() == removedProperty) {
+                iterator.remove();
+                connectionLayer.removeActor(connection);
+            }
+        }
+    }
+
+    /**
+     * @return the UI for the specified property, if it exists in this BeanGraphEditor.
+     */
+    private PropertyUi getPropertyUi(Property property) {
+        // Find bean that the property is in
+        if (property != null && property.getBean() != null) {
+            Bean bean = property.getBean();
+
+            // Handle special case for graph internal interface beans
+            if (bean == getValue().getInterfaceBean()) {
+                if (property.getDirection().isOutput()) {
+                    bean = getValue().getInternalOutputBean();
+                }
+                else {
+                    bean = getValue().getInternalInputBean();
+                }
+            }
+
+            // Find editor for the bean
+            final BeanEditor beanEditor = beanEditors.get(bean);
+            if (beanEditor != null) {
+
+                // Find property UI from the editor
+                return beanEditor.getPropertyUi(property);
+            }
+        }
+
+        return null;
+    }
+
+
+
     @Override protected void updateValueInUi(BeanGraph value) {
+        // Nothing to do here
     }
 
     @Override protected void setDisabled(boolean disabled) {

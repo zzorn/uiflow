@@ -11,9 +11,9 @@ public abstract class BeanBase implements Bean {
     private final Set<BeanListener> listeners = new LinkedHashSet<BeanListener>();
 
     private final PropertyListener propertyListener = new PropertyListener() {
-        @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
+        @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
             for (BeanListener listener : listeners) {
-                listener.onValueChanged(bean, property, newValue);
+                listener.onValueChanged(bean, property, oldValue, newValue);
             }
         }
 
@@ -29,9 +29,9 @@ public abstract class BeanBase implements Bean {
             }
         }
 
-        @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
+        @Override public void onSourceChanged(Bean bean, Property property, Property oldSource, Property newSource) {
             for (BeanListener listener : listeners) {
-                listener.onSourceChanged(bean, property, newSource);
+                listener.onSourceChanged(bean, property, oldSource, newSource);
             }
         }
     };

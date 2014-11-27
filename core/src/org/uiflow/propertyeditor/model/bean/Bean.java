@@ -29,4 +29,8 @@ public interface Bean {
      */
     void removeListener(BeanListener listener);
 
+    /**
+     * The first property with the specified name, or null if not found.
+     */
+    Property getProperty(String propertyName);
 }
