@@ -2,6 +2,7 @@ package org.uiflow.propertyeditor.ui.editors.beangraph;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -18,19 +19,23 @@ import org.uiflow.utils.MathUtils;
  */
 public class Connection extends Actor {
 
-    private static final int MAX_SEGMENT_COUNT = 100;
-    private static final int MIN_SEGMENT_COUNT = 8;
+    private static final int MAX_SEGMENT_COUNT = 200;
+    private static final int MIN_SEGMENT_COUNT = 20;
+    private static final String SEGMENT_NAME = "connection_segment_soft";
     private static float segmentLength = 10f;
-    private static final int BORDER_FUDGE_FACTOR = 8;
+    private static final int BORDER_FUDGE_FACTOR = 7;
 
-    private final Drawable dotImage;
+    private final TextureRegion segmentImage;
 
     private PropertyUi source;
     private PropertyUi target;
 
-    private Vector2 start = new Vector2(100, 10);
-    private Vector2 end = new Vector2(200, 300);
+    private Vector2 start = new Vector2();
+    private Vector2 end = new Vector2();
     private Vector2 pos = new Vector2();
+    private Vector2 oldPos = new Vector2();
+    private Vector2 t = new Vector2();
+    private Color color = new Color();
 
     private final UiContext uiContext;
 
@@ -42,11 +47,11 @@ public class Connection extends Actor {
         Check.notNull(uiContext, "uiContext");
 
         this.uiContext = uiContext;
-        this.dotImage = uiContext.getSkin().getDrawable("connector");
+        this.segmentImage = uiContext.getSkin().getRegion(SEGMENT_NAME);
         this.source = source;
         this.target = target;
 
-        segmentLength = dotImage.getMinWidth() * 0.5f;
+        segmentLength = segmentImage.getRegionWidth() * 0.4f;
     }
 
     public PropertyUi getSource() {
@@ -99,33 +104,62 @@ public class Connection extends Actor {
         updateEndPos();
 
         // Determine connection color based on type
-        Color color = uiContext.getTypeColor(source.getProperty().getType());
+        Color startColor = uiContext.getTypeColor(source.getProperty().getType());
+        Color endColor = uiContext.getTypeColor(target.getProperty().getType());
         final Color oldColor = batch.getColor();
-        batch.setColor(color.r, color.g, color.b, color.a * parentAlpha);
 
-        final float dotW = dotImage.getMinWidth();
-        final float dotH = dotImage.getMinHeight();
+        final float segmentW = segmentImage.getRegionWidth();
+        final float segmentH = segmentImage.getRegionHeight();
 
         // Determine number of segments to use
-        int segmentCount = MathUtils.clamp((int)(distance(start, end) / segmentLength), MIN_SEGMENT_COUNT, MAX_SEGMENT_COUNT);
+        final float distance = distance(start, end);
+        int segmentCount = MathUtils.clamp((int)(distance / segmentLength), MIN_SEGMENT_COUNT, MAX_SEGMENT_COUNT);
+
+        if (end.x < start.x) {
+            segmentCount *= 2;
+        }
 
         // Draw dots
+        oldPos.set(start);
         for (int i = 0; i < segmentCount; i++) {
-            // Calculate dot position
             float relPos = (float) i / (segmentCount - 1);
-            pos.set(start);
-            pos.interpolate(end, relPos, Interpolation.linear);
+
+            // Calculate color
+            color.set(startColor);
+            color.lerp(endColor, relPos);
+            color.a *= parentAlpha;
+            batch.setColor(color);
+
+            // Calculate dot position
+            float swing = MathUtils.clamp(start.x - end.x, 0, segmentLength * 10);
+            pos.x = interpolate(relPos, start.x, end.x, Interpolation.linear) + swing *(float) Math.sin(relPos * Math.PI*2);
+            pos.y = interpolate(relPos, start.y, end.y, Interpolation.sine);
+
+            // Calculate angle
+            t.set(pos).sub(oldPos);
+            float angle = t.angle();
+            oldPos.set(pos);
 
             // Draw dot
-            // (Getting rid of occasional weird artifacts by rounding to integer coordinates).
-            dotImage.draw(batch,
-                          (int) pos.x,
-                          (int) pos.y,
-                          dotW,
-                          dotH);
+            batch.draw(segmentImage,
+                       pos.x, pos.y,
+                       segmentW*0.5f,
+                       segmentH*0.5f,
+                       segmentW, segmentH,
+                       1f, 1f,
+                       angle);
         }
 
         batch.setColor(oldColor);
+    }
+
+    private float interpolate(final float relPos,
+                              final float start,
+                              final float end,
+                              final Interpolation interpolation) {
+        return MathUtils.mix(interpolation.apply(0, 1, relPos),
+                             start,
+                             end);
     }
 
     private float distance(final Vector2 a, final Vector2 b) {
@@ -139,7 +173,7 @@ public class Connection extends Actor {
 
         if (connectorButton != null) {
             // FUdge
-            posOut.set(connectorButton.getOffsetX() - dotImage.getMinWidth() * 0.5f - BORDER_FUDGE_FACTOR,
+            posOut.set(connectorButton.getOffsetX() - segmentImage.getRegionWidth() * 0.5f - BORDER_FUDGE_FACTOR,
                        0 - BORDER_FUDGE_FACTOR);
 
             connectorButton.localToStageCoordinates(posOut);
