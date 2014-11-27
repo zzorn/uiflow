@@ -24,6 +24,7 @@ public class Connection extends Actor {
     private static final String SEGMENT_NAME = "connection_segment_soft";
     private static final String END_POINT_NAME = "connector";
     private static final float DEFAULT_SEGMENT_SCALE = 0.8f;
+    private static final float SEGMENT_DENSITY = 4f;
     private static float segmentLength = 10f;
     private static final int BORDER_FUDGE_FACTOR = 8;
 
@@ -56,7 +57,7 @@ public class Connection extends Actor {
         this.source = source;
         this.target = target;
 
-        segmentLength = segmentImage.getRegionWidth() * 0.4f;
+        segmentLength = segmentImage.getRegionWidth() * (1f / SEGMENT_DENSITY);
     }
 
     public PropertyUi getSource() {
@@ -136,9 +137,9 @@ public class Connection extends Actor {
             batch.setColor(color);
 
             // Calculate dot position
-            float swing = MathUtils.clamp(start.x - end.x, 0, segmentLength * 10);
-            pos.x = interpolate(relPos, start.x, end.x, Interpolation.linear) + swing *(float) Math.sin(relPos * Math.PI*2);
-            pos.y = interpolate(relPos, start.y, end.y, Interpolation.sine);
+            float swing = MathUtils.clamp(distance + (start.x - end.x), segmentLength * 2, segmentLength * 10);
+            pos.x =  interpolate(relPos, start.x, end.x, Interpolation.sine) + swing *(float) Math.sin(relPos * Math.PI*2);
+            pos.y = interpolate(relPos, start.y, end.y, Interpolation.fade);
 
             // Calculate angle
             t.set(pos).sub(oldPos);
