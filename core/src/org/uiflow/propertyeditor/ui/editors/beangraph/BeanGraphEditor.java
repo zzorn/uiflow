@@ -22,6 +22,12 @@ import java.util.*;
 /**
  *
  */
+// TODO: Creating and deleting connections
+// TODO: Updating value based on source
+// TODO: Hide editor if source provided (maybe show value?)
+// TODO: Add preview component
+// TODO: Some kind of procedural generator example.
+
 // TODO: Support closing and opening animations
 // TODO: Support pan
 // TODO: Support zoom?  Maybe keep beans fixed size, just zoom positions
