@@ -27,6 +27,8 @@ import java.util.*;
 // TODO: Hide editor if source provided (maybe show value?)
 // TODO: Add preview component
 // TODO: Some kind of procedural generator example.
+// TODO: Selecting beans and creating a group
+// TODO: Copying a bean by clone or link
 
 // TODO: Support closing and opening animations
 // TODO: Support pan
@@ -292,7 +294,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private void moveToFront(Bean bean) {
         if (bean != null) {
             // Lift connections
-            for (Connection connection : connections) {
+            // (Loop from last to first connections, so that the connections to properties higher up cover the ones below).
+            for (int i = connections.size() - 1; i >= 0; i--) {
+                Connection connection = connections.get(i);
                 if (bean.getProperties().contains(connection.getSourceProperty()) ||
                     bean.getProperties().contains(connection.getTargetProperty())) {
                     connection.toFront();

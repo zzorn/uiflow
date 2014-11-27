@@ -295,7 +295,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
                 switch (labelLocation) {
                     case LEFT:
                         if (inputConnector != null) propertyList.add(inputConnector);
-                        propertyList.add(label).right();
+                        propertyList.add(label).left();
                         propertyList.add(ui).expandX().fillX();
                         if (outputConnector != null) propertyList.add(outputConnector);
                         propertyList.row();

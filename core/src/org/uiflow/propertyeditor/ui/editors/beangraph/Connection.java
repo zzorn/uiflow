@@ -22,10 +22,13 @@ public class Connection extends Actor {
     private static final int MAX_SEGMENT_COUNT = 200;
     private static final int MIN_SEGMENT_COUNT = 20;
     private static final String SEGMENT_NAME = "connection_segment_soft";
+    private static final String END_POINT_NAME = "connector";
+    private static final float DEFAULT_SEGMENT_SCALE = 0.8f;
     private static float segmentLength = 10f;
-    private static final int BORDER_FUDGE_FACTOR = 7;
+    private static final int BORDER_FUDGE_FACTOR = 8;
 
     private final TextureRegion segmentImage;
+    private final Drawable endPointImage;
 
     private PropertyUi source;
     private PropertyUi target;
@@ -38,6 +41,7 @@ public class Connection extends Actor {
     private Color color = new Color();
 
     private final UiContext uiContext;
+    private float segmentScale = DEFAULT_SEGMENT_SCALE;
 
     public Connection(UiContext uiContext) {
         this(uiContext, null, null);
@@ -48,6 +52,7 @@ public class Connection extends Actor {
 
         this.uiContext = uiContext;
         this.segmentImage = uiContext.getSkin().getRegion(SEGMENT_NAME);
+        this.endPointImage = uiContext.getSkin().getDrawable(END_POINT_NAME);
         this.source = source;
         this.target = target;
 
@@ -108,8 +113,8 @@ public class Connection extends Actor {
         Color endColor = uiContext.getTypeColor(target.getProperty().getType());
         final Color oldColor = batch.getColor();
 
-        final float segmentW = segmentImage.getRegionWidth();
-        final float segmentH = segmentImage.getRegionHeight();
+        final float segmentW = segmentImage.getRegionWidth() * segmentScale;
+        final float segmentH = segmentImage.getRegionHeight() * segmentScale;
 
         // Determine number of segments to use
         final float distance = distance(start, end);
@@ -119,7 +124,7 @@ public class Connection extends Actor {
             segmentCount *= 2;
         }
 
-        // Draw dots
+        // Draw segments
         oldPos.set(start);
         for (int i = 0; i < segmentCount; i++) {
             float relPos = (float) i / (segmentCount - 1);
@@ -142,7 +147,8 @@ public class Connection extends Actor {
 
             // Draw dot
             batch.draw(segmentImage,
-                       pos.x, pos.y,
+                       pos.x - segmentW * 0.5f,
+                       pos.y - segmentH * 0.5f,
                        segmentW*0.5f,
                        segmentH*0.5f,
                        segmentW, segmentH,
@@ -150,7 +156,22 @@ public class Connection extends Actor {
                        angle);
         }
 
+        // Draw start and end connectors
+        drawEndpoint(batch, startColor, start);
+        drawEndpoint(batch, endColor, end);
+
         batch.setColor(oldColor);
+    }
+
+    private void drawEndpoint(Batch batch, Color color, final Vector2 pos) {
+        batch.setColor(color);
+        final float w = endPointImage.getMinWidth();
+        final float h = endPointImage.getMinHeight();
+        endPointImage.draw(batch,
+                           pos.x - w*0.5f,
+                           pos.y - h*0.5f,
+                           w,
+                           h);
     }
 
     private float interpolate(final float relPos,
@@ -172,13 +193,16 @@ public class Connection extends Actor {
         posOut.set(0, 0);
 
         if (connectorButton != null) {
-            // FUdge
-            posOut.set(connectorButton.getOffsetX() - segmentImage.getRegionWidth() * 0.5f - BORDER_FUDGE_FACTOR,
-                       0 - BORDER_FUDGE_FACTOR);
+            // Fudge
+            final float offsetX = connectorButton.getOffsetX();
+            final float offsetY = connectorButton.getOffsetY();
+            posOut.set(connectorButton.getWidth()  * 0.5f + offsetX - BORDER_FUDGE_FACTOR,
+                       connectorButton.getHeight() * 0.5f + offsetY - BORDER_FUDGE_FACTOR);
 
             connectorButton.localToStageCoordinates(posOut);
         }
     }
+
 
 
 }
