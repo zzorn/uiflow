@@ -260,7 +260,8 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
     private boolean shouldShowProperty(Property propertyInBean) {
         return directionsToShow == null ||
-               directionsToShow == propertyInBean.getDirection();
+               directionsToShow == propertyInBean.getDirection() ||
+               directionsToShow.isInput() && propertyInBean.getDirection().isInput();
     }
 
     private boolean removePropertyUi(Property property) {
@@ -312,17 +313,23 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
                         propertyList.row();
                         break;
                     case ABOVE:
-                        if (inputConnector != null) propertyList.add(inputConnector);
-                        propertyList.add(label).left().expandX().fillX();
-                        if (outputConnector != null) propertyList.add(outputConnector);
+                        Table t = new Table();
+                        if (inputConnector != null) t.add(inputConnector);
+                        t.add(label).left().expandX().fillX();
+                        if (outputConnector != null) t.add(outputConnector);
+
+                        propertyList.add(t).expandX().fillX();
                         propertyList.row();
                         propertyList.add(ui).expandX().fillX().row();
                         break;
                     case BELOW:
                         propertyList.add(ui).expandX().fillX().row();
-                        if (inputConnector != null) propertyList.add(inputConnector);
-                        propertyList.add(label).left().expandX().fillX();
-                        if (outputConnector != null) propertyList.add(outputConnector);
+
+                        Table t2 = new Table();
+                        if (inputConnector != null) t2.add(inputConnector);
+                        t2.add(label).left().expandX().fillX();
+                        if (outputConnector != null) t2.add(outputConnector);
+                        propertyList.add(t2).left().expandX().fillX();
                         propertyList.row();
                         break;
                     case NONE:

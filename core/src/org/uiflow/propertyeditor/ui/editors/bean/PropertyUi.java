@@ -161,34 +161,7 @@ public class PropertyUi extends FlowWidgetBase {
 
         // Create container for the value editor UI
         valueEditorContainer = new Container<Actor>();
-        //valueEditorContainer.pad(spacing);
 
-        /*
-        // Arrange label and value editor in correct configuration
-        Table nameAndValue1 = new Table(uiContext.getSkin());
-        switch (labelLocation) {
-            case ABOVE:
-                nameAndValue1.add(labelContainer).expandX().left();
-                nameAndValue1.row();
-                nameAndValue1.add(valueEditorContainer).expand().fillX();
-                nameLabel.setAlignment(Align.left);
-                break;
-            case LEFT:
-                nameAndValue1.add(labelContainer).right().padRight(getUiContext().getGap());
-                nameAndValue1.add(valueEditorContainer).expand().fillX();
-                nameLabel.setAlignment(Align.right);
-                break;
-            case BELOW:
-                nameAndValue1.add(valueEditorContainer).expand().fillX();
-                nameAndValue1.row();
-                nameAndValue1.add(labelContainer).expandX().left();
-                nameLabel.setAlignment(Align.left);
-                break;
-            case NONE:
-                nameAndValue1.add(valueEditorContainer);
-                break;
-        }
-        */
         table.add(valueEditorContainer).fillX().expandX();
 
         // Create the value editor UI
@@ -201,6 +174,7 @@ public class PropertyUi extends FlowWidgetBase {
     }
 
     private Actor createConnector(UiContext uiContext, boolean isInput) {
+        // Get connector icon
         final Drawable connectorImage = uiContext.getSkin().getDrawable("connector");
 
         final float offset = connectorImage.getMinWidth() / 2 - 2;
@@ -209,7 +183,8 @@ public class PropertyUi extends FlowWidgetBase {
         imageButton.getImage().setScaling(Scaling.fill);
         imageButton.setPrefWidth(2);
 
-        imageButton.setColor(Color.ORANGE);
+        // Color connector according to property type
+        imageButton.setColor(uiContext.getTypeColor(property.getType()));
 
         return imageButton;
     }

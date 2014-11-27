@@ -86,7 +86,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addBean(String name, Bean value) {
-        return addProperty(name, value, new BeanEditorConfiguration(), PropertyDirection.IN);
+        return addBean(name, value, LabelLocation.LEFT);
     }
 
     /**
@@ -98,7 +98,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addBean(String name, Bean value, LabelLocation labelLocation) {
-        return addProperty(name, value, new BeanEditorConfiguration(labelLocation), PropertyDirection.IN);
+        return addBean(name, value, labelLocation, PropertyDirection.INOUT);
     }
 
     /**
@@ -111,7 +111,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addBean(String name, Bean value, LabelLocation labelLocation, final PropertyDirection direction) {
-        return addProperty(name, value, new BeanEditorConfiguration(labelLocation), direction);
+        return addProperty(name, Bean.class, value, new BeanEditorConfiguration(labelLocation), direction);
     }
 
     /**
@@ -132,7 +132,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addString(String name, String value) {
-        return addProperty(name, value, new TextEditorConfiguration(), PropertyDirection.INOUT);
+        return addProperty(name, String.class, value, new TextEditorConfiguration(), PropertyDirection.INOUT);
     }
 
     /**
@@ -144,7 +144,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addString(String name, String value, int rows) {
-        return addProperty(name, value, new TextEditorConfiguration(rows), PropertyDirection.INOUT);
+        return addProperty(name, String.class, value, new TextEditorConfiguration(rows), PropertyDirection.INOUT);
     }
 
     /**
@@ -157,7 +157,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addString(String name, String value, int rows, final PropertyDirection direction) {
-        return addProperty(name, value, new TextEditorConfiguration(rows), direction);
+        return addProperty(name, String.class, value, new TextEditorConfiguration(rows), direction);
     }
 
     /**
@@ -178,7 +178,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addDouble(String name, double value) {
-        return addProperty(name, value, new NumberEditorConfiguration(Double.class), PropertyDirection.INOUT);
+        return addProperty(name, Double.class, value, new NumberEditorConfiguration(Double.class), PropertyDirection.INOUT);
     }
 
     /**
@@ -190,7 +190,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addDouble(String name, double value, final PropertyDirection direction) {
-        return addProperty(name, value, new NumberEditorConfiguration(Double.class), direction);
+        return addProperty(name, Double.class, value, new NumberEditorConfiguration(Double.class), direction);
     }
 
     /**
@@ -211,6 +211,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean enforceRange,
                               boolean logarithmic) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic),
                            PropertyDirection.INOUT);
@@ -236,6 +237,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean enforceRange,
                               boolean logarithmic) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic),
                            direction);
@@ -263,6 +265,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean logarithmic,
                               ColorFunction colorFunction) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic, true, true, colorFunction),
                            direction);
@@ -288,6 +291,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean logarithmic,
                               ColorFunction colorFunction) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class, min, max, enforceRange, logarithmic, true, true, colorFunction),
                            PropertyDirection.INOUT);
@@ -314,6 +318,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean enforceRange,
                               boolean logarithmic) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class, min, origin, max, enforceRange, logarithmic),
                            direction);
@@ -338,6 +343,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean enforceRange,
                               boolean logarithmic) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class, min, origin, max, enforceRange, logarithmic),
                            PropertyDirection.INOUT);
@@ -366,6 +372,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean logarithmic,
                               ColorFunction colorFunction) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class,
                                                          min,
@@ -405,6 +412,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                               boolean logarithmic,
                               ColorFunction colorFunction) {
         return addProperty(name,
+                           Double.class,
                            value,
                            new NumberEditorConfiguration(Double.class,
                                                          min,
@@ -438,7 +446,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addFloat(String name, float value) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class), PropertyDirection.INOUT);
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class), PropertyDirection.INOUT);
     }
 
     /**
@@ -450,7 +458,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addFloat(String name, float value, final PropertyDirection direction) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class), direction);
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class), direction);
     }
 
 
@@ -471,7 +479,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                              float max,
                              boolean enforceRange,
                              boolean logarithmic) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic),
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic),
                            PropertyDirection.INOUT);
     }
 
@@ -493,7 +501,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                              float max,
                              boolean enforceRange,
                              boolean logarithmic) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, origin, max, enforceRange, logarithmic),
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class, min, origin, max, enforceRange, logarithmic),
                            PropertyDirection.INOUT);
     }
 
@@ -516,7 +524,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                              float max,
                              boolean enforceRange,
                              boolean logarithmic) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic),
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic),
                            direction);
     }
 
@@ -540,7 +548,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                              float max,
                              boolean enforceRange,
                              boolean logarithmic) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, origin, max, enforceRange, logarithmic),
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class, min, origin, max, enforceRange, logarithmic),
                            direction);
     }
 
@@ -564,7 +572,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                              boolean enforceRange,
                              boolean logarithmic,
                              ColorFunction colorFunction) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic, true, true, colorFunction),
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class, min, max, enforceRange, logarithmic, true, true, colorFunction),
                            direction);
     }
 
@@ -589,7 +597,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                              boolean enforceRange,
                              boolean logarithmic,
                              ColorFunction colorFunction) {
-        return addProperty(name, value, new NumberEditorConfiguration(Float.class, min, origin, max, enforceRange, logarithmic, true, true, true, colorFunction),
+        return addProperty(name, Float.class, value, new NumberEditorConfiguration(Float.class, min, origin, max, enforceRange, logarithmic, true, true, true, colorFunction),
                            direction);
     }
 
@@ -611,7 +619,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addInt(String name, int value) {
-        return addProperty(name, value, new NumberEditorConfiguration(Integer.class), PropertyDirection.INOUT);
+        return addProperty(name, Integer.class, value, new NumberEditorConfiguration(Integer.class), PropertyDirection.INOUT);
     }
 
     /**
@@ -624,7 +632,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addInt(String name, int value, int min, int max) {
-        return addProperty(name, value, new NumberEditorConfiguration(Integer.class, min, max), PropertyDirection.INOUT);
+        return addProperty(name, Integer.class, value, new NumberEditorConfiguration(Integer.class, min, max), PropertyDirection.INOUT);
     }
 
     /**
@@ -639,7 +647,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addInt(String name, int value, int min, int max, boolean enforceRange, boolean logarithmic) {
-        return addProperty(name, value, new NumberEditorConfiguration(Integer.class, min, max, enforceRange, logarithmic),
+        return addProperty(name, Integer.class, value, new NumberEditorConfiguration(Integer.class, min, max, enforceRange, logarithmic),
                            PropertyDirection.INOUT);
     }
 
@@ -662,7 +670,7 @@ public class DynamicBean extends BeanBase implements MutableBean {
                            boolean enforceRange,
                            boolean logarithmic,
                            final PropertyDirection direction) {
-        return addProperty(name, value, new NumberEditorConfiguration(Integer.class, min, max, enforceRange, logarithmic),
+        return addProperty(name, Integer.class, value, new NumberEditorConfiguration(Integer.class, min, max, enforceRange, logarithmic),
                            direction);
     }
 
@@ -673,8 +681,11 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @param direction whether this is an input or output property.
      * @return the added property
      */
-    public Property addProperty(String name, EditorConfiguration editorConfiguration, final PropertyDirection direction) {
-        return addProperty(name, null, editorConfiguration, direction);
+    public Property addProperty(String name,
+                                Class type,
+                                EditorConfiguration editorConfiguration,
+                                final PropertyDirection direction) {
+        return addProperty(name, type, null, editorConfiguration, direction);
     }
 
     /**
@@ -686,10 +697,11 @@ public class DynamicBean extends BeanBase implements MutableBean {
      * @return the added property
      */
     public Property addProperty(String name,
+                                Class type,
                                 Object value,
                                 EditorConfiguration editorConfiguration,
                                 final PropertyDirection direction) {
-        final DynamicProperty property = new DynamicProperty(name, editorConfiguration, value, direction);
+        final DynamicProperty property = new DynamicProperty(name, type, editorConfiguration, value, direction);
         addProperty(property);
         return property;
     }

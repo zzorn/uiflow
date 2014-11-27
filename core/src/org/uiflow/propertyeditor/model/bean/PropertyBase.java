@@ -1,6 +1,7 @@
 package org.uiflow.propertyeditor.model.bean;
 
 import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
+import org.uiflow.utils.Check;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
  */
 public abstract class PropertyBase implements Property {
 
+    private final Class type;
     private Bean bean;
     private transient boolean loopCheckFlag = false;
 
@@ -23,17 +25,19 @@ public abstract class PropertyBase implements Property {
     /**
      * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      */
-    protected PropertyBase(EditorConfiguration editorConfiguration) {
-        this(editorConfiguration, PropertyDirection.INOUT);
+    protected PropertyBase(Class type,
+                           EditorConfiguration editorConfiguration) {
+        this(type, editorConfiguration, PropertyDirection.INOUT);
     }
 
     /**
      * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      * @param propertyDirection whether this property is an input or output or both property.
      */
-    protected PropertyBase(EditorConfiguration editorConfiguration,
+    protected PropertyBase(Class type,
+                           EditorConfiguration editorConfiguration,
                            PropertyDirection propertyDirection) {
-        this(editorConfiguration, propertyDirection, null);
+        this(type, editorConfiguration, propertyDirection, null);
     }
 
     /**
@@ -41,10 +45,11 @@ public abstract class PropertyBase implements Property {
      * @param propertyDirection whether this property is an input or output or both property.
      * @param bean the bean that this property belongs to, or null if not yet known.
      */
-    protected PropertyBase(EditorConfiguration editorConfiguration,
+    protected PropertyBase(Class type,
+                           EditorConfiguration editorConfiguration,
                            PropertyDirection propertyDirection,
                            Bean bean) {
-        this(editorConfiguration, propertyDirection, bean, null);
+        this(type, editorConfiguration, propertyDirection, bean, null);
     }
 
 
@@ -54,15 +59,23 @@ public abstract class PropertyBase implements Property {
      * @param bean the bean that this property belongs to, or null if not yet known.
      * @param source the property to use as source for this property, or null to not use any source.
      */
-    protected PropertyBase(EditorConfiguration editorConfiguration,
+    protected PropertyBase(Class type,
+                           EditorConfiguration editorConfiguration,
                            PropertyDirection propertyDirection,
                            Bean bean,
                            Property source) {
+        Check.notNull(type, "type");
+
+        this.type = type;
         this.bean = bean;
         this.editorConfiguration = editorConfiguration;
 
         setPropertyDirection(propertyDirection);
         if (source != null) setSource(source);
+    }
+
+    @Override public final Class getType() {
+        return type;
     }
 
     public final boolean usesSourceProperty(Property property) {

@@ -18,12 +18,14 @@ public interface MutableBean extends Bean {
      * Adds a new property to this bean.
      *
      * @param name name of the property
+     * @param type type of the property value.
      * @param value initial value for the property
      * @param editorConfiguration editor configuration for the property
-     * @param direction
+     * @param direction whether the property is read or write (or both).
      * @return the added property
      */
     Property addProperty(String name,
+                         Class type,
                          Object value,
                          EditorConfiguration editorConfiguration,
                          final PropertyDirection direction);

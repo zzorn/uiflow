@@ -20,8 +20,9 @@ public class DynamicProperty extends PropertyBase {
      * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
      */
     public DynamicProperty(String name,
+                           Class type,
                            EditorConfiguration editorConfiguration) {
-        this(name, editorConfiguration, null, PropertyDirection.INOUT);
+        this(name, type, editorConfiguration, null, PropertyDirection.INOUT);
     }
 
     /**
@@ -30,9 +31,10 @@ public class DynamicProperty extends PropertyBase {
      * @param value initial value of this property.
      */
     public DynamicProperty(String name,
+                           Class type,
                            EditorConfiguration editorConfiguration,
                            Object value) {
-        this(name, editorConfiguration, value, PropertyDirection.INOUT);
+        this(name, type, editorConfiguration, value, PropertyDirection.INOUT);
     }
 
     /**
@@ -42,10 +44,11 @@ public class DynamicProperty extends PropertyBase {
      * @param propertyDirection whether this property is an input or output or both property.
      */
     public DynamicProperty(String name,
+                           Class type,
                            EditorConfiguration editorConfiguration,
                            Object value,
                            PropertyDirection propertyDirection) {
-        this(name, editorConfiguration, value, propertyDirection, null);
+        this(name, type, editorConfiguration, value, propertyDirection, null);
     }
 
     /**
@@ -56,11 +59,12 @@ public class DynamicProperty extends PropertyBase {
      * @param bean the bean that this property belongs to, or null if not yet known.
      */
     public DynamicProperty(String name,
+                           Class type,
                            EditorConfiguration editorConfiguration,
                            Object value,
                            PropertyDirection propertyDirection,
                            Bean bean) {
-        this (name, editorConfiguration, value, propertyDirection, bean, null);
+        this (name, type, editorConfiguration, value, propertyDirection, bean, null);
     }
 
     /**
@@ -72,12 +76,13 @@ public class DynamicProperty extends PropertyBase {
      * @param source the property to use as source for this property, or null to not use any source.
      */
     public DynamicProperty(String name,
+                           Class type,
                            EditorConfiguration editorConfiguration,
                            Object value,
                            PropertyDirection propertyDirection,
                            Bean bean,
                            Property source) {
-        super(editorConfiguration, propertyDirection, bean, source);
+        super(type, editorConfiguration, propertyDirection, bean, source);
         setName(name);
         setValue(value);
     }

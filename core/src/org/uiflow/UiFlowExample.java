@@ -56,7 +56,7 @@ public class UiFlowExample extends ApplicationAdapter {
         rootTable.add(beanEditor.getUi(uiContext));
 
         // Print changes
-        testBean.addListener(createdebugPrintListener());
+        testBean.addListener(createDebugPrintListener());
         */
 
         // Test bean graph
@@ -64,10 +64,10 @@ public class UiFlowExample extends ApplicationAdapter {
         beanGraph.addBean(createTestBean(), 40, 40);
         beanGraph.addBean(createTestBean(), 340, 340);
         beanGraph.addBean(createTestBean(), 740, 340);
-        beanGraph.getInterfaceBean().addDouble("x", 0, PropertyDirection.IN);
-        beanGraph.getInterfaceBean().addDouble("y", 0, PropertyDirection.IN);
+        beanGraph.getInterfaceBean().addFloat("x", 0, PropertyDirection.IN);
+        beanGraph.getInterfaceBean().addFloat("y", 0, PropertyDirection.IN);
         beanGraph.getInterfaceBean().addDouble("result", 0, PropertyDirection.OUT);
-        beanGraph.getInterfaceBean().addDouble("tuning", 3.14, PropertyDirection.INOUT);
+        beanGraph.getInterfaceBean().addFloat("tuning", 3.14f, PropertyDirection.INOUT);
         BeanGraphEditor beanGraphEditor = new BeanGraphEditor();
         beanGraphEditor.setValue(beanGraph);
         rootTable.add(beanGraphEditor.getUi(uiContext)).fill().expand();
@@ -118,7 +118,7 @@ public class UiFlowExample extends ApplicationAdapter {
     }
 
 
-    private BeanListener createdebugPrintListener() {
+    private BeanListener createDebugPrintListener() {
         return new BeanListener() {
             @Override public void onBeanNameChanged(Bean bean) {
                 System.out.println("onBeanNameChanged");

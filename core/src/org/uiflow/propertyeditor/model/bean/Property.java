@@ -15,32 +15,9 @@ public interface Property {
     String getName();
 
     /**
-     * @return the bean that this property is in.
+     * @return the type of the property value.
      */
-    Bean getBean();
-
-    /**
-     * @param bean the bean that this property is in.  Should only be set during property initialization,
-     *             it is assumed that properties do not normally move from one bean to another.
-     */
-    void setBean(Bean bean);
-
-    /**
-     * @return whether the property can be used as input or output.
-     */
-    PropertyDirection getDirection();
-
-    /**
-     * @return the type of editor to use to edit this property and the configuration for it,
-     * or null if it is not editable or viewable.
-     */
-    EditorConfiguration getEditorConfiguration();
-
-    /**
-     * @param editorConfiguration the type of editor to use to edit this property and the configuration for it,
-     *                            or null if it is not editable or viewable.
-     */
-    void setEditorConfiguration(EditorConfiguration editorConfiguration);
+    Class getType();
 
     /**
      * @return current value of this property, regardless of whether a source is specified.
@@ -66,11 +43,6 @@ public interface Property {
     void setSource(Property source);
 
     /**
-     * Recursively checks whether the specified property is used as source by this property.
-     */
-    boolean usesSourceProperty(Property property);
-
-    /**
      * @return current value of this property, or the value of the source property if it is set.
      * If the source property points back to this Property as its source, an exception may be thrown.
      * TODO: Implement by setting a flag during the call, throwing exception if flag is set when get is called.
@@ -85,6 +57,39 @@ public interface Property {
      *              If this is not a Property object, it attempts to set source to null and the value to the given object.
      */
     <T> void set(T value);
+
+    /**
+     * @return the bean that this property is in.
+     */
+    Bean getBean();
+
+    /**
+     * @param bean the bean that this property is in.  Should only be set during property initialization,
+     *             it is assumed that properties do not normally move from one bean to another.
+     */
+    void setBean(Bean bean);
+
+    /**
+     * @return whether the property can be used as input or output.
+     */
+    PropertyDirection getDirection();
+
+    /**
+     * Recursively checks whether the specified property is used as source by this property.
+     */
+    boolean usesSourceProperty(Property property);
+
+    /**
+     * @return the type of editor to use to edit this property and the configuration for it,
+     * or null if it is not editable or viewable.
+     */
+    EditorConfiguration getEditorConfiguration();
+
+    /**
+     * @param editorConfiguration the type of editor to use to edit this property and the configuration for it,
+     *                            or null if it is not editable or viewable.
+     */
+    void setEditorConfiguration(EditorConfiguration editorConfiguration);
 
     /**
      * Listen to changes in this property or its value.

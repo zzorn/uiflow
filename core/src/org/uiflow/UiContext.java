@@ -1,5 +1,6 @@
 package org.uiflow;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -34,6 +35,11 @@ public interface UiContext {
      * @return large gap for UI layout.
      */
     float getLargeGap();
+
+    /**
+     * @return a color associated with the specified type.
+     */
+    Color getTypeColor(Class type);
 
     /**
      * Disposes any loaded skins, textures, and other files.

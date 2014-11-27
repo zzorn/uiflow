@@ -1,11 +1,16 @@
 package org.uiflow;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
 
 /**
  * Default implementation of the UiContext.
@@ -36,6 +41,9 @@ public class DefaultUiContext implements UiContext {
     private final TextureAtlas textureAtlas;
     private final float gapSize;
     private final Stage stage;
+
+    private Map<Class, Color> typeColors = new HashMap<Class, Color>();
+    private Random random = new Random();
 
     /**
      * Uses the default skin and a font height depending on the height of the screen, and no custom textureAtlas.
@@ -92,6 +100,16 @@ public class DefaultUiContext implements UiContext {
         this.gapSize = gapSize;
         this.skin = skin;
         this.textureAtlas = textureAtlas;
+
+        setupDefaultTypeColors();
+    }
+
+    private void setupDefaultTypeColors() {
+        // Initialize some type colors
+        setTypeColor(Integer.class, 0.2, 0.4, 1);
+        setTypeColor(Float.class, 0.2, 0.65, 0.9);
+        setTypeColor(Double.class, 0.2, 0.9, 0.8);
+        setTypeColor(String.class, 0.2, 0.9, 0.1);
     }
 
     public Skin getSkin() {
@@ -112,6 +130,30 @@ public class DefaultUiContext implements UiContext {
 
     @Override public float getLargeGap() {
         return gapSize * LARGE_GAP_FACTOR;
+    }
+
+    @Override public Color getTypeColor(Class type) {
+        if (type == null) return Color.BLACK;
+
+        Color color = typeColors.get(type);
+        if (color == null) {
+            color = randomColor(type.hashCode());
+            typeColors.put(type, color);
+        }
+
+        return color;
+    }
+
+    public Map<Class, Color> getTypeColors() {
+        return typeColors;
+    }
+
+    public void setTypeColor(Class type, Color color) {
+        setTypeColor(type, color.r, color.g, color.b);
+    }
+
+    public void setTypeColor(Class type, double red, double green, double blue) {
+        typeColors.put(type, new Color((float) red, (float) green, (float) blue, 1f));
     }
 
     @Override public void dispose() {
@@ -174,5 +216,16 @@ public class DefaultUiContext implements UiContext {
         return size;
     }
 
+
+    private Color randomColor(int seed) {
+        random.setSeed(seed);
+        return new Color(randomColorComponent(random),
+                         randomColorComponent(random),
+                         randomColorComponent(random), 1f);
+    }
+
+    private float randomColorComponent(final Random random) {
+        return random.nextFloat() * 0.7f + 0.15f;
+    }
 
 }
