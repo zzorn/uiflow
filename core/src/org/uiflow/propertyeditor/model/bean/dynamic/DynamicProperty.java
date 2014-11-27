@@ -96,6 +96,9 @@ public class DynamicProperty extends PropertyBase {
         }
     }
 
+    @Override public void setPropertyDirection(PropertyDirection propertyDirection) {
+        super.setPropertyDirection(propertyDirection);
+    }
 
     @Override protected void doSetValue(Object value) {
         this.value = value;
@@ -108,4 +111,5 @@ public class DynamicProperty extends PropertyBase {
     @Override public String toString() {
         return getName();
     }
+
 }

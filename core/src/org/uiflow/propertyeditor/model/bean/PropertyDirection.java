@@ -30,4 +30,16 @@ public enum PropertyDirection {
         return (isInput() && other.isOutput()) ||
                (isOutput() && other.isInput());
     }
+
+    public PropertyDirection getReverse() {
+        switch (this) {
+            case IN:
+                return OUT;
+            case OUT:
+                return IN;
+            case INOUT:
+                return INOUT;
+        }
+        throw new IllegalStateException("Unhandled case " + this);
+    }
 }

@@ -28,6 +28,12 @@ public abstract class BeanBase implements Bean {
                 listener.onPropertyChanged(bean, property);
             }
         }
+
+        @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
+            for (BeanListener listener : listeners) {
+                listener.onSourceChanged(bean, property, newSource);
+            }
+        }
     };
 
     @Override public final void addListener(BeanListener listener) {
@@ -48,11 +54,11 @@ public abstract class BeanBase implements Bean {
     }
 
     /**
-     * Notifies all listeners that this bean has changed.
+     * Notifies all listeners that the name of this bean has changed.
      */
-    protected final void notifyBeanChanged() {
+    protected final void notifyBeanNameChanged() {
         for (BeanListener listener : listeners) {
-            listener.onChanged(this);
+            listener.onBeanNameChanged(this);
         }
     }
 

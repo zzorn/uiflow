@@ -8,6 +8,7 @@ import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.bean.Bean;
 import org.uiflow.propertyeditor.model.bean.BeanListener;
 import org.uiflow.propertyeditor.model.bean.Property;
+import org.uiflow.propertyeditor.model.bean.PropertyDirection;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 
 import java.util.*;
@@ -17,8 +18,15 @@ import java.util.*;
  */
 public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
+    private final boolean showConnectors;
+    private final boolean mirrorDirections;
+    private final PropertyDirection directionsToShow;
+
     private final LinkedHashMap<Property, PropertyUi> propertyEditors = new LinkedHashMap<Property, PropertyUi>();
+
     private Table propertyList;
+    private Table beanTable;
+    private Label nameLabel;
 
     private final BeanListener beanListener = new BeanListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
@@ -28,49 +36,119 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         @Override public void onValueEditorChanged(Bean bean, Property property) {
         }
 
-        @Override public void onPropertyChanged(Bean bean, Property property) {
-        }
-
-        @Override public void onChanged(Bean bean) {
-            notifyValueEdited(bean);
+        @Override public void onBeanNameChanged(Bean bean) {
+            if (nameLabel != null) {
+                nameLabel.setText(bean.getName());
+            }
         }
 
         @Override public void onPropertyAdded(Bean bean, Property property) {
-            addPropertyUi(property);
-            rebuildPropertyList();
-            notifyValueEdited(bean);
+            if (shouldShowProperty(property)) {
+                addPropertyUi(property);
+                rebuildPropertyList();
+                notifyValueEdited(bean);
+            }
         }
 
         @Override public void onPropertyRemoved(Bean bean, Property property) {
-            removePropertyUi(property);
-            rebuildPropertyList();
+            final boolean removed = removePropertyUi(property);
+            if (removed) {
+                rebuildPropertyList();
+            }
             notifyValueEdited(bean);
+        }
+
+        @Override public void onPropertyChanged(Bean bean, Property property) {
+        }
+
+        @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
         }
     };
 
-    private Label nameLabel;
 
 
     /**
      * Creates a new BeanEditor using the default configuration.
      */
     public BeanEditor() {
-        this(BeanEditorConfiguration.DEFAULT);
+        this(false, false);
+    }
+
+
+    /**
+     * Creates a new BeanEditor using the default configuration.
+     *
+     * @param showConnectors true if connectors for connecting properties to each other should be shown.
+     * @param mirrorDirections if true, output properties will be shown as input properties and vice versa.
+     *                         Used for internal views of BeanGraph interfaces.
+     */
+    public BeanEditor(boolean showConnectors, boolean mirrorDirections) {
+        this(BeanEditorConfiguration.DEFAULT, showConnectors, mirrorDirections);
     }
 
     /**
      * Creates a new BeanEditor using the specified configuration.
      */
     public BeanEditor(BeanEditorConfiguration configuration) {
-        super(configuration);
+        this(configuration, false, false);
+    }
+
+    /**
+     * Creates a new BeanEditor using the specified configuration.
+     *
+     * @param showConnectors true if connectors for connecting properties to each other should be shown.
+     * @param mirrorDirections if true, output properties will be shown as input properties and vice versa.
+     *                         Used for internal views of BeanGraph interfaces.
+     */
+    public BeanEditor(BeanEditorConfiguration configuration, boolean showConnectors, boolean mirrorDirections) {
+        this(configuration.getLabelLocation(), showConnectors, mirrorDirections, null);
     }
 
     /**
      * Creates a new BeanEditor.
+     *
      * @param labelLocation location of the property labels relative the the property editors.
      */
     public BeanEditor(LabelLocation labelLocation) {
+        this(labelLocation, false, false, null);
+    }
+
+    /**
+     * Creates a new BeanEditor.
+     *
+     * @param labelLocation location of the property labels relative the the property editors.
+     * @param showConnectors true if connectors for connecting properties to each other should be shown.
+     * @param mirrorDirections if true, output properties will be shown as input properties and vice versa.
+     *                         Used for internal views of BeanGraph interfaces.
+     * @param directionsToShow the property directions to show, or null if all should be shown.
+     */
+    public BeanEditor(LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections, PropertyDirection directionsToShow) {
         super(new BeanEditorConfiguration(labelLocation));
+        this.showConnectors = showConnectors;
+        this.mirrorDirections = mirrorDirections;
+        this.directionsToShow = directionsToShow;
+    }
+
+    /**
+     * @return true if connectors for connecting properties to each other should be shown.
+     */
+    public final boolean isShowConnectors() {
+        return showConnectors;
+    }
+
+    /**
+     * @return if true, output properties will be shown as input properties and vice versa.
+     *         Used for internal views of BeanGraph interfaces.
+     */
+    public final boolean isMirrorDirections() {
+        return mirrorDirections;
+    }
+
+    /**
+     * @return the property directions to show, or null if all should be shown.
+     */
+    public final PropertyDirection getDirectionsToShow() {
+        return directionsToShow;
     }
 
     @Override protected void onValueChanged(Bean oldValue, Bean newValue) {
@@ -88,7 +166,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     }
 
     @Override protected Actor createEditor(BeanEditorConfiguration configuration, UiContext uiContext) {
-        Table beanTable = new Table(uiContext.getSkin());
+        beanTable = new Table(uiContext.getSkin());
         beanTable.setBackground("window_titled");
 
         // Name label
@@ -145,8 +223,10 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
             for (Property propertyInBean : beanProperties) {
                 if (!propertyEditors.containsKey(propertyInBean)) {
                     // Add missing property UI
-                    addPropertyUi(propertyInBean);
-                    propertiesAddedOrRemoved = true;
+                    if (shouldShowProperty(propertyInBean)) {
+                        addPropertyUi(propertyInBean);
+                        propertiesAddedOrRemoved = true;
+                    }
                 }
             }
 
@@ -178,7 +258,12 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         }
     }
 
-    private void removePropertyUi(Property property) {
+    private boolean shouldShowProperty(Property propertyInBean) {
+        return directionsToShow == null ||
+               directionsToShow == propertyInBean.getDirection();
+    }
+
+    private boolean removePropertyUi(Property property) {
         if (isUiCreated()) {
             // Remove from lookup map
             final PropertyUi editor = propertyEditors.remove(property);
@@ -187,14 +272,16 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
             if (editor != null) {
                 // Dispose removed editor
                 editor.dispose();
+                return true;
             }
         }
+        return false;
     }
 
     private void addPropertyUi(Property property) {
         if (isUiCreated()) {
             // Create editor
-            final PropertyUi propertyUi = new PropertyUi(property, getConfiguration().getLabelLocation());
+            final PropertyUi propertyUi = new PropertyUi(property, getConfiguration().getLabelLocation(), showConnectors, mirrorDirections);
 
             // Add to lookup map
             propertyEditors.put(property, propertyUi);
@@ -213,26 +300,47 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
                 final Actor ui = propertyUi.getUi(getUiContext());
                 final Actor label = propertyUi.getLabelUi();
+                final Actor inputConnector = propertyUi.getInputConnector();
+                final Actor outputConnector = propertyUi.getOutputConnector();
 
                 switch (labelLocation) {
                     case LEFT:
+                        if (inputConnector != null) propertyList.add(inputConnector);
                         propertyList.add(label).right();
-                        propertyList.add(ui).expandX().fillX().row();
+                        propertyList.add(ui).expandX().fillX();
+                        if (outputConnector != null) propertyList.add(outputConnector);
+                        propertyList.row();
                         break;
                     case ABOVE:
-                        propertyList.add(label).left().expandX().fillX().row();
+                        if (inputConnector != null) propertyList.add(inputConnector);
+                        propertyList.add(label).left().expandX().fillX();
+                        if (outputConnector != null) propertyList.add(outputConnector);
+                        propertyList.row();
                         propertyList.add(ui).expandX().fillX().row();
                         break;
                     case BELOW:
                         propertyList.add(ui).expandX().fillX().row();
-                        propertyList.add(label).left().expandX().fillX().row();
+                        if (inputConnector != null) propertyList.add(inputConnector);
+                        propertyList.add(label).left().expandX().fillX();
+                        if (outputConnector != null) propertyList.add(outputConnector);
+                        propertyList.row();
                         break;
                     case NONE:
-                        propertyList.add(ui).expandX().fillX().row();
+                        if (inputConnector != null) propertyList.add(inputConnector);
+                        propertyList.add(ui).expandX().fillX();
+                        if (outputConnector != null) propertyList.add(outputConnector);
+                        propertyList.row();
                         break;
                 }
 
             }
+
+            /*
+            // TODO: Trying to layout bean container..
+            propertyList.layout();
+            beanTable.invalidate();
+            beanTable.layout();
+            */
         }
     }
 

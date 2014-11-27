@@ -11,18 +11,14 @@ import java.util.List;
 public abstract class PropertyBase implements Property {
 
     private Bean bean;
-    private PropertyDirection propertyDirection;
-    private EditorConfiguration editorConfiguration;
-
-    private Property source;
-
     private transient boolean loopCheckFlag = false;
 
     private final List<PropertyListener> listeners = new ArrayList<PropertyListener>(4);
 
-    protected PropertyBase() {
-        this(null);
-    }
+
+    private PropertyDirection propertyDirection;
+    private EditorConfiguration editorConfiguration;
+    private Property source;
 
     /**
      * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
@@ -69,77 +65,11 @@ public abstract class PropertyBase implements Property {
         if (source != null) setSource(source);
     }
 
-    @Override public final Bean getBean() {
-        return bean;
-    }
-
-    @Override public final void setBean(Bean bean) {
-        // Null values not allowed
-        if (bean == null) throw new IllegalArgumentException("The bean can not be null");
-
-        // Throw exception if trying to change a non-null value
-        if (this.bean != null && this.bean != bean) {
-            throw new IllegalStateException("The bean of this property has already been set to " + this.bean + ", can not change it to " + bean);
-        }
-
-        // Update bean if it wasn't already updated
-        if (this.bean != bean) {
-            this.bean = bean;
-            notifyPropertyChanged();
-        }
-    }
-
-    @Override public final PropertyDirection getDirection() {
-        return propertyDirection;
-    }
-
-    @Override public EditorConfiguration getEditorConfiguration() {
-        return editorConfiguration;
-    }
-
-    @Override public void setEditorConfiguration(EditorConfiguration editorConfiguration) {
-        this.editorConfiguration = editorConfiguration;
-        notifyValueEditorChanged();
-    }
-
-    /**
-     * Whether this is an input or output or inout property.
-     */
-    protected final void setPropertyDirection(PropertyDirection propertyDirection) {
-        if (propertyDirection == null) throw new IllegalArgumentException("PropertyDirection can not be null");
-
-        this.propertyDirection = propertyDirection;
-        notifyPropertyChanged();
-    }
-
-    @Override public final Property getSource() {
-        return source;
-    }
-
-    @Override public final void setSource(Property source) {
-        checkSource(source);
-
-        this.source = source;
-
-        notifyPropertyChanged();
-    }
-
-
-    /**
-     * Throws an illegal argument exception if the suggestedSource is not acceptable.
-     * By default checks if setting the source to sourceToCheck would cause a loop.
-     */
-    protected void checkSource(Property suggestedSource) {
-        if (suggestedSource == this || suggestedSource.usesSourceProperty(this)) {
-            throw new IllegalArgumentException("Setting source to " +
-                                               suggestedSource + " would create an infinite loop, as " +
-                                               suggestedSource + " or its sources uses this property as their source");
-        }
-    }
-
-    @Override public final boolean usesSourceProperty(Property property) {
+    public final boolean usesSourceProperty(Property property) {
         // Check if we already visited this property
         if (loopCheckFlag) return false;
+
+        final Property source = getSource();
 
         // Check if our source directly is the property
         if (source == property) return true;
@@ -157,9 +87,60 @@ public abstract class PropertyBase implements Property {
         return false;
     }
 
+    public final void addListener(PropertyListener listener) {
+        if (listener == null) throw new IllegalArgumentException("The listener should not be null");
+
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+    }
+
+    public final void removeListener(PropertyListener listener) {
+        listeners.remove(listener);
+    }
+
+    @Override public final PropertyDirection getDirection() {
+        return propertyDirection;
+    }
+
+    @Override public EditorConfiguration getEditorConfiguration() {
+        return editorConfiguration;
+    }
+
+    public final Property getSource() {
+        return source;
+    }
+
+    public final void setSource(Property source) {
+        checkSource(source);
+
+        this.source = source;
+
+        notifyPropertyChanged();
+    }
+
+
+    @Override public void setEditorConfiguration(EditorConfiguration editorConfiguration) {
+        this.editorConfiguration = editorConfiguration;
+        notifyValueEditorChanged();
+    }
+
+    /**
+     * Whether this is an input or output or inout property.
+     */
+    protected void setPropertyDirection(PropertyDirection propertyDirection) {
+        if (propertyDirection == null) throw new IllegalArgumentException("PropertyDirection can not be null");
+
+        this.propertyDirection = propertyDirection;
+        notifyPropertyChanged();
+    }
+
+
     @Override public final void setValue(Object value) {
-        doSetValue(value);
-        notifyValueChanged(value);
+        if (getValue() != value) {
+            doSetValue(value);
+            notifyValueChanged(value);
+        }
     }
 
     @Override public <T> T get() {
@@ -181,16 +162,36 @@ public abstract class PropertyBase implements Property {
      */
     protected abstract void doSetValue(Object value);
 
-    @Override public final void addListener(PropertyListener listener) {
-        if (listener == null) throw new IllegalArgumentException("The listener should not be null");
+    public final void setBean(Bean bean) {
+        // Null values not allowed
+        if (bean == null) throw new IllegalArgumentException("The bean can not be null");
 
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
+        // Throw exception if trying to change a non-null value
+        if (this.bean != null && this.bean != bean) {
+            throw new IllegalStateException("The bean of this property has already been set to " + this.bean + ", can not change it to " + bean);
+        }
+
+        // Update bean if it wasn't already updated
+        if (this.bean != bean) {
+            this.bean = bean;
+            notifyPropertyChanged();
         }
     }
 
-    @Override public final void removeListener(PropertyListener listener) {
-        listeners.remove(listener);
+    public Bean getBean() {
+        return bean;
+    }
+
+    /**
+     * Throws an illegal argument exception if the suggestedSource is not acceptable.
+     * By default checks if setting the source to sourceToCheck would cause a loop.
+     */
+    protected final void checkSource(Property suggestedSource) {
+        if (suggestedSource == this || suggestedSource.usesSourceProperty(this)) {
+            throw new IllegalArgumentException("Setting source to " +
+                                               suggestedSource + " would create an infinite loop, as " +
+                                               suggestedSource + " or its sources uses this property as their source");
+        }
     }
 
     /**
@@ -201,7 +202,6 @@ public abstract class PropertyBase implements Property {
             listener.onPropertyChanged(bean, this);
         }
     }
-
 
     protected final void notifyValueEditorChanged() {
         for (PropertyListener listener : listeners) {
@@ -217,4 +217,5 @@ public abstract class PropertyBase implements Property {
             listener.onValueChanged(bean, this, newValue);
         }
     }
+
 }

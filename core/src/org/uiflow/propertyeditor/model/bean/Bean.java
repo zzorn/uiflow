@@ -29,13 +29,4 @@ public interface Bean {
      */
     void removeListener(BeanListener listener);
 
-    /**
-     * @param graph the graph that this bean is contained in, or null for none
-     */
-    void setGraph(BeanGraph graph);
-
-    /**
-     * @return the graph that this bean is contained in, or null for none
-     */
-    BeanGraph getGraph();
 }

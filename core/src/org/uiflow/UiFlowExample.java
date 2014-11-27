@@ -8,10 +8,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import org.uiflow.propertyeditor.model.bean.Bean;
 import org.uiflow.propertyeditor.model.bean.BeanListener;
 import org.uiflow.propertyeditor.model.bean.Property;
+import org.uiflow.propertyeditor.model.bean.PropertyDirection;
 import org.uiflow.propertyeditor.model.bean.dynamic.DynamicBean;
-import org.uiflow.propertyeditor.model.bean.dynamic.DynamicProperty;
-import org.uiflow.propertyeditor.ui.editors.bean.BeanEditor;
+import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
+import org.uiflow.propertyeditor.model.beangraph.DefaultBeanGraph;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
+import org.uiflow.propertyeditor.ui.editors.beangraph.BeanGraphEditor;
+import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
 import org.uiflow.utils.colorfunction.ColorGradient;
 
 public class UiFlowExample extends ApplicationAdapter {
@@ -46,15 +49,29 @@ public class UiFlowExample extends ApplicationAdapter {
         stage.addActor(rootTable);
 
         // Create UI elements
+        /*
         final Bean testBean = createTestBean();
         BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT);
         beanEditor.setValue(testBean);
         rootTable.add(beanEditor.getUi(uiContext));
 
-        rootTable.layout();
-
         // Print changes
         testBean.addListener(createdebugPrintListener());
+        */
+
+        // Test bean graph
+        BeanGraph beanGraph = new DefaultBeanGraph("Test Graph");
+        beanGraph.addBean(createTestBean(), 40, 40);
+        beanGraph.addBean(createTestBean(), 340, 340);
+        beanGraph.addBean(createTestBean(), 740, 340);
+        beanGraph.getInterfaceBean().addDouble("x", 0, PropertyDirection.IN);
+        beanGraph.getInterfaceBean().addDouble("y", 0, PropertyDirection.IN);
+        beanGraph.getInterfaceBean().addDouble("result", 0, PropertyDirection.OUT);
+        beanGraph.getInterfaceBean().addDouble("tuning", 3.14, PropertyDirection.INOUT);
+        BeanGraphEditor beanGraphEditor = new BeanGraphEditor();
+        beanGraphEditor.setValue(beanGraph);
+        rootTable.add(beanGraphEditor.getUi(uiContext)).fill().expand();
+
 	}
 
     @Override
@@ -86,7 +103,8 @@ public class UiFlowExample extends ApplicationAdapter {
         testBean.addString("Name", "Igor");
         testBean.addDouble("Hitpoints", 24, 0, 1000, false, true, ColorGradient.RED_YELLOW);
         testBean.addDouble("Balance", 24, -100, 0, 100, false, true, ColorGradient.RED_GREEN_RED);
-        testBean.addDouble("Balance2", 12, -10000, 0, 10000, true, true, ColorGradient.RED_GREEN_RED);
+        testBean.addDouble("Balance2", 12, -10000, 0, 10000, true, true, ColorGradient.RED_GREEN_RED
+        );
         testBean.addInt("Inventory Slots", 16, 0, 100, false, false);
         testBean.addString("Favourite Foods", "Tasty Hobbitses\nMushroom Soup\nCrunchy Crabs", 4);
 
@@ -102,6 +120,11 @@ public class UiFlowExample extends ApplicationAdapter {
 
     private BeanListener createdebugPrintListener() {
         return new BeanListener() {
+            @Override public void onBeanNameChanged(Bean bean) {
+                System.out.println("onBeanNameChanged");
+                System.out.println("  bean = " + bean);
+            }
+
             @Override public void onValueChanged(Bean bean, Property property, Object newValue) {
                 System.out.println("onValueChanged");
                 System.out.println("  bean = " + bean);
@@ -121,11 +144,6 @@ public class UiFlowExample extends ApplicationAdapter {
                 System.out.println("  property = " + property);
             }
 
-            @Override public void onChanged(Bean bean) {
-                System.out.println("onChanged");
-                System.out.println("  bean = " + bean);
-            }
-
             @Override public void onPropertyAdded(Bean bean, Property property) {
                 System.out.println("onPropertyAdded");
                 System.out.println("  bean = " + bean);
@@ -136,6 +154,13 @@ public class UiFlowExample extends ApplicationAdapter {
                 System.out.println("onPropertyRemoved");
                 System.out.println("  bean = " + bean);
                 System.out.println("  property = " + property);
+            }
+
+            @Override public void onSourceChanged(Bean bean, Property property, Property newSource) {
+                System.out.println("onSourceChanged");
+                System.out.println("  bean = " + bean);
+                System.out.println("  property = " + property);
+                System.out.println("  newSource = " + newSource);
             }
         };
     }

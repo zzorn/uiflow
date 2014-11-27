@@ -23,6 +23,7 @@ public class FlowSlider extends Widget implements Disableable {
     private static final double SCROLL_STEP = 0.1;
 
     private static final double EPSILON = 0.00001;
+    private static final int DEFAULT_PREFERRED_WIDTH = 160;
 
     private double min;
     private double max;
@@ -363,7 +364,7 @@ public class FlowSlider extends Widget implements Disableable {
         if (prefWidth > 0) {
             return prefWidth;
         } else {
-            return Math.max(200, flowSliderStyle.background.getMinWidth());
+            return Math.max(DEFAULT_PREFERRED_WIDTH, flowSliderStyle.background.getMinWidth());
         }
     }
 
