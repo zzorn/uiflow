@@ -104,15 +104,18 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
     /**
      * Creates a new BeanEditor.
-     *
-     * @param labelLocation location of the property labels relative the the property editors.
+     *  @param labelLocation location of the property labels relative the the property editors.
      * @param showConnectors true if connectors for connecting properties to each other should be shown.
      * @param mirrorDirections if true, output properties will be shown as input properties and vice versa.
-     *                         Used for internal views of BeanGraph interfaces.
+ *                         Used for internal views of BeanGraph interfaces.
      * @param directionsToShow the property directions to show, or null if all should be shown.
      * @param hideEditorWhenSourceUsed if true, the editor will be hidden if a value is provided to a property by a source.
      */
-    public BeanEditor(LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections, PropertyDirection directionsToShow, boolean hideEditorWhenSourceUsed) {
+    public BeanEditor(LabelLocation labelLocation,
+                      boolean showConnectors,
+                      boolean mirrorDirections,
+                      PropertyDirection directionsToShow,
+                      boolean hideEditorWhenSourceUsed) {
         super(new BeanEditorConfiguration(labelLocation));
         this.showConnectors = showConnectors;
         this.mirrorDirections = mirrorDirections;
@@ -168,8 +171,10 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         beanTable.row();
 
         // Property list
+        final float horizontalPad = showConnectors ? 0 : uiContext.getGap();
+        final float verticalPad = uiContext.getGap();
         propertyList = new Table(uiContext.getSkin());
-        beanTable.add(propertyList).expand().fill().pad(uiContext.getGap());
+        beanTable.add(propertyList).expand().fill().pad(verticalPad, horizontalPad, verticalPad, horizontalPad);
 
         updateUi();
 

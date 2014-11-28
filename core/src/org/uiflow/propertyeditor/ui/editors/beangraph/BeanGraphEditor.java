@@ -5,6 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import org.uiflow.UiContext;
@@ -13,6 +14,7 @@ import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraphListener;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 import org.uiflow.propertyeditor.ui.editors.bean.BeanEditor;
+import org.uiflow.propertyeditor.ui.editors.bean.ConnectorButton;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
 import org.uiflow.propertyeditor.ui.editors.bean.PropertyUi;
 import org.uiflow.utils.Check;
@@ -22,24 +24,29 @@ import java.util.*;
 /**
  *
  */
-// TODO: Creating and deleting connections
-// TODO: Updating value based on source
-// TODO: Hide editor if source provided (maybe show value?)
-// TODO: Add preview component
-// TODO: Some kind of procedural generator example.
-// TODO: Selecting beans and creating a group
-// TODO: Copying a bean by clone or link
+// TODO: Highlight dragged connectors if they can make a connection or not
+// TODO: Add support for value conversion
 
-// TODO: Support closing and opening animations
 // TODO: Support pan
 // TODO: Support zoom?  Maybe keep beans fixed size, just zoom positions
 // TODO: Support deleting beans
 // TODO: Support bean palettes that can be used to add new beans to a graph?
 // TODO: How to support undo/redo or version control?
+// TODO: Selecting beans and creating a group
+// TODO: Support closing and opening animations
+// TODO: Copying a bean by link by default
+// TODO: Add support for making a group unique (breaking link to common source)
+
+// TODO: Add preview component
+// TODO: Some kind of procedural generator example.
 public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguration> {
 
     private static final String EDITOR_BACKGROUND = "frame";
+
     private static final int DRAG_BUTTON = Input.Buttons.LEFT;
+
+    private static final int CONNECTION_DRAG_BUTTON = DRAG_BUTTON;
+    private static final int CANCEL_DRAG_BUTTON = Input.Buttons.RIGHT;
 
     private Table workArea;
     private Table connectionLayer;
@@ -150,6 +157,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         workArea = new Table(uiContext.getSkin());
         workArea.setClip(true);
 
+        // Receive mouse events for whole area, not just children
+        workArea.setTouchable(Touchable.enabled);
+
         /*
         connectionLayer = new Table(uiContext.getSkin());
         connectionLayer.setClip(true);
@@ -166,10 +176,137 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         // Listen to moves
         workArea.addListener(dragListener);
 
+        // Listen to connectors
+        connectionLayer.addListener(createConnectionListener());
+
         // Add any beans that are in the current value
         rebuildGraphUi(getValue());
 
         return table;
+    }
+
+    private InputListener createConnectionListener() {
+        return new InputListener() {
+
+            private Connection draggedConnection;
+
+            @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                final ConnectorButton connector = getParentOfType(ConnectorButton.class, event.getTarget());
+                if (connector != null) {
+                    final boolean isInput = connector.isInput();
+                    final PropertyUi propertyUi = connector.getPropertyUi();
+
+                    if (button == CONNECTION_DRAG_BUTTON) {
+                        // If we already have a dragged connection, connect it to this property if possible
+                        if (draggedConnection != null) {
+                            connect(propertyUi, isInput);
+                        }
+                        else {
+                            if (isInput && propertyUi.getProperty() != null && propertyUi.getProperty().getSource() != null) {
+                                // Disconnect input when clicked
+                                propertyUi.getProperty().setSource(null);
+                            }
+                            else {
+                                // Start drag
+                                final PropertyUi source = isInput ? null : propertyUi;
+                                final PropertyUi target = isInput ? propertyUi : null;
+                                draggedConnection = createUnfinishedConnection(source, target);
+                                updateDragPosition(event);
+                            }
+                        }
+
+                        return true;
+                    }
+                }
+                else if (button == CONNECTION_DRAG_BUTTON) {
+                    // Cancel drag if it was active
+                    return cancelDrag();
+                }
+
+                return false;
+            }
+
+            @Override public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                updateDragPosition(event);
+            }
+
+            @Override public boolean mouseMoved(InputEvent event, float x, float y) {
+                return updateDragPosition(event);
+            }
+
+            @Override public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if (draggedConnection != null) {
+                    // Check if we are above a connector
+                    final ConnectorButton connectorButton = getParentOfType(ConnectorButton.class, getActorAt(event));
+                    if (connectorButton != null) {
+                        final boolean isInput = connectorButton.isInput();
+                        final PropertyUi propertyUi = connectorButton.getPropertyUi();
+
+                        // Only try connecting to other buttons than the one we started from
+                        if (!draggedConnection.containsPropertyUi(propertyUi)) {
+                            // Try connecting
+                            connect(connectorButton.getPropertyUi(), isInput);
+                        }
+                    }
+                    else {
+                        // Button up on no target, drop connection
+                        cancelDrag();
+                    }
+                }
+            }
+
+            private Actor getActorAt(InputEvent event) {
+                return event.getStage().hit(event.getStageX(), event.getStageY(), true);
+            }
+
+            private boolean updateDragPosition(InputEvent event) {
+                if (draggedConnection != null) {
+                    // Update dragged position
+                    final float stageX = event.getStageX();
+                    final float stageY = event.getStageY();
+
+                    if (draggedConnection.getSource() == null) {
+                        draggedConnection.setStartPos(stageX, stageY);
+                    }
+                    else if (draggedConnection.getTarget() == null) {
+                        draggedConnection.setEndPos(stageX, stageY);
+                    }
+
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+
+            private void connect(final PropertyUi propertyUi, final boolean providedUiIsTarget) {
+                if (draggedConnection != null) {
+                    if (providedUiIsTarget) draggedConnection.setTarget(propertyUi);
+                    else draggedConnection.setSource(propertyUi);
+
+                    if (draggedConnection.isAcceptable()) {
+                        draggedConnection.createConnection();
+                    }
+                    else {
+                        // Wasn't acceptable, remove connection
+                        cancelDrag();
+                    }
+
+                    draggedConnection = null;
+                }
+            }
+
+            private boolean cancelDrag() {
+                if (draggedConnection != null) {
+                    removeUnfinishedConnection(draggedConnection);
+                    draggedConnection = null;
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            }
+        };
     }
 
     private Actor getChildIn(final Table widget, InputEvent event) {
@@ -181,6 +318,15 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         }
 
         return actor;
+    }
+
+    private <T extends Actor> T getParentOfType(Class<T> desiredType, Actor actor) {
+        // Find parent actor that is within the work area
+        while (actor != null && !desiredType.isInstance(actor)) {
+            actor = actor.getParent();
+        }
+
+        return (T) actor;
     }
 
     @Override protected void onValueChanged(BeanGraph oldValue, BeanGraph newValue) {
@@ -333,6 +479,18 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     }
 
 
+    private Connection createUnfinishedConnection(PropertyUi source, PropertyUi target) {
+        final Connection connection = new Connection(getUiContext(), source, target);
+        connectionLayer.addActor(connection);
+        connections.add(connection);
+        return connection;
+    }
+
+    private void removeUnfinishedConnection(Connection connection) {
+        connectionLayer.removeActor(connection);
+        connections.remove(connection);
+    }
+
     private void addConnection(Property target) {
         if (target != null) {
             final Property source = target.getSource();
@@ -421,4 +579,5 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         // TODO: Implement
 
     }
+
 }

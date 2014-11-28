@@ -100,6 +100,10 @@ public interface Property {
      */
     void removeListener(PropertyListener propertyListener);
 
+    /**
+     * @return true if this property can use the specified one as source.
+     */
+    boolean canUseSource(Property sourceProperty);
 }
 
 

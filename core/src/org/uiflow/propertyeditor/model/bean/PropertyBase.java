@@ -114,14 +114,21 @@ public abstract class PropertyBase implements Property {
 
         if (!listeners.contains(listener)) {
             listeners.add(listener);
-
-            System.out.println("PropertyBase.addListener " + getName());
-            System.out.println("  listener = " + listener);
         }
     }
 
     public final void removeListener(PropertyListener listener) {
         listeners.remove(listener);
+    }
+
+    @Override public boolean canUseSource(Property sourceProperty) {
+        return sourceProperty != null &&
+               sourceProperty != this &&
+               !sourceProperty.usesSourceProperty(this) && // Our source should not use us as a source
+               getType() != null &&
+               sourceProperty.getType() != null &&
+               getType().isAssignableFrom(sourceProperty.getType()); // Type compatibility
+        // TODO: Add support for automatic converters (e.g. between number types, as well as custom ones, such as number to a constant generator)
     }
 
     @Override public final PropertyDirection getDirection() {
@@ -248,7 +255,7 @@ public abstract class PropertyBase implements Property {
      * By default checks if setting the source to sourceToCheck would cause a loop.
      */
     protected final void checkSource(Property suggestedSource) {
-        if (suggestedSource == this || suggestedSource.usesSourceProperty(this)) {
+        if (suggestedSource != null && (suggestedSource == this || suggestedSource.usesSourceProperty(this))) {
             throw new IllegalArgumentException("Setting source to " +
                                                suggestedSource + " would create an infinite loop, as " +
                                                suggestedSource + " or its sources uses this property as their source");

@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.bean.Property;
 import org.uiflow.propertyeditor.ui.editors.bean.PropertyUi;
-import org.uiflow.propertyeditor.ui.widgets.ConnectorButton;
+import org.uiflow.propertyeditor.ui.editors.bean.ConnectorButton;
 import org.uiflow.utils.Check;
 import org.uiflow.utils.MathUtils;
 
@@ -92,6 +92,16 @@ public class Connection extends Actor {
         this.target = target;
     }
 
+    public void setStartPos(float x, float y) {
+        start.set(x - BORDER_FUDGE_FACTOR,
+                  y - BORDER_FUDGE_FACTOR);
+    }
+
+    public void setEndPos(float x, float y) {
+        end.set(x - BORDER_FUDGE_FACTOR,
+                y - BORDER_FUDGE_FACTOR);
+    }
+
     private void updateStartPos() {
         if (source != null) {
             getActorPos(source.getOutputConnector(), start);
@@ -110,8 +120,11 @@ public class Connection extends Actor {
         updateEndPos();
 
         // Determine connection color based on type
-        Color startColor = uiContext.getTypeColor(source.getProperty().getType());
-        Color endColor = uiContext.getTypeColor(target.getProperty().getType());
+        Color startColor = getPropertyColor(source);
+        Color endColor = getPropertyColor(target);
+        if (startColor == null) startColor = endColor;
+        if (endColor == null) endColor = startColor;
+
         final Color oldColor = batch.getColor();
 
         final float segmentW = segmentImage.getRegionWidth() * segmentScale;
@@ -164,6 +177,15 @@ public class Connection extends Actor {
         batch.setColor(oldColor);
     }
 
+    private Color getPropertyColor(final PropertyUi propertyUi) {
+        if (propertyUi != null && propertyUi.getProperty() != null && propertyUi.getProperty().getType() != null) {
+            return uiContext.getTypeColor(propertyUi.getProperty().getType());
+        }
+        else {
+            return null;
+        }
+    }
+
     private void drawEndpoint(Batch batch, Color color, final Vector2 pos) {
         batch.setColor(color);
         final float w = endPointImage.getMinWidth();
@@ -205,5 +227,30 @@ public class Connection extends Actor {
     }
 
 
+    /**
+     * @return true if this connection would be ok to make.
+     */
+    public boolean isAcceptable() {
+        return source != null &&
+               target != null &&
+               getSourceProperty() != null &&
+               getTargetProperty() != null &&
+               getTargetProperty().canUseSource(getSourceProperty());
+    }
 
+    /**
+     * Adds the actual connection between the properties.
+     */
+    public void createConnection() {
+        final Property targetProperty = getTargetProperty();
+        if (targetProperty != null) {
+            targetProperty.setSource(getSourceProperty());
+        }
+    }
+
+    public boolean containsPropertyUi(PropertyUi propertyUi) {
+        return propertyUi != null &&
+               (source == propertyUi ||
+                target == propertyUi);
+    }
 }

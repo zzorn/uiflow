@@ -11,7 +11,6 @@ import org.uiflow.propertyeditor.model.bean.PropertyDirection;
 import org.uiflow.propertyeditor.model.bean.PropertyListener;
 import org.uiflow.propertyeditor.ui.editors.Editor;
 import org.uiflow.propertyeditor.ui.editors.EditorListener;
-import org.uiflow.propertyeditor.ui.widgets.ConnectorButton;
 import org.uiflow.widgets.FlowWidgetBase;
 
 /**
@@ -91,10 +90,14 @@ public class PropertyUi extends FlowWidgetBase {
      * @param labelLocation relative location of the label.
      * @param showConnectors if true, connectors for connecting a source or output property to the property will be shown.
      * @param mirrorDirections if true, an output property will be shown as an input property and vice versa.
-     *                         Used for internal views of BeanGraph interfaces.
+*                         Used for internal views of BeanGraph interfaces.
      * @param hideEditorWhenSourceUsed if true, the editor will be hidden if a value is provided to a property by a source.
      */
-    public PropertyUi(Property property, LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections, boolean hideEditorWhenSourceUsed) {
+    public PropertyUi(Property property,
+                      LabelLocation labelLocation,
+                      boolean showConnectors,
+                      boolean mirrorDirections,
+                      boolean hideEditorWhenSourceUsed) {
         this.labelLocation = labelLocation;
         this.showConnectors = showConnectors;
         this.mirrorDirections = mirrorDirections;
@@ -176,20 +179,17 @@ public class PropertyUi extends FlowWidgetBase {
         return table;
     }
 
-    private ConnectorButton createConnector(UiContext uiContext, boolean isInput) {
+    private ConnectorButton createConnector(UiContext uiContext, final boolean isInput) {
         // Get connector icon
         final Drawable connectorImage = uiContext.getSkin().getDrawable("connector");
 
-        final float offset = connectorImage.getMinWidth() / 2 - 2;
-        final float xOffset = isInput ? -offset : offset;
-        ConnectorButton imageButton = new ConnectorButton(connectorImage, xOffset, 0);
-        imageButton.getImage().setScaling(Scaling.fill);
-        imageButton.setPrefWidth(2);
+        final ConnectorButton connector = new ConnectorButton(connectorImage, this, isInput);
+        connector.getImage().setScaling(Scaling.fill);
 
         // Color connector according to property type
-        imageButton.setColor(uiContext.getTypeColor(property.getType()));
+        connector.setColor(uiContext.getTypeColor(property.getType()));
 
-        return imageButton;
+        return connector;
     }
 
     private void buildValueEditor() {
@@ -220,10 +220,12 @@ public class PropertyUi extends FlowWidgetBase {
 
     private void updateUi() {
         if (isUiCreated()) {
+            final boolean editorVisible = shouldEditorBeVisible();
+
             // Update name
             String name = property != null ? property.getName() : "";
 
-            if (labelLocation == LabelLocation.LEFT) name += ":";
+            if (labelLocation == LabelLocation.LEFT && editorVisible) name += ":";
 
             nameLabel.setText(name);
 
@@ -234,7 +236,7 @@ public class PropertyUi extends FlowWidgetBase {
             }
 
             // Hide editor if desired
-            setEditorVisible(shouldEditorBeVisible());
+            setEditorVisible(editorVisible);
 
             // Update connectors
             if (showConnectors) {

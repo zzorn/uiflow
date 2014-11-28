@@ -1,9 +1,8 @@
-package org.uiflow.propertyeditor.ui.widgets;
+package org.uiflow.propertyeditor.ui.editors.bean;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 
 /**
@@ -17,39 +16,23 @@ public class ConnectorButton extends ImageButton {
     private float prefW = -1;
     private float prefH = -1;
 
-    public ConnectorButton(Skin skin) {
-        super(skin);
+    private final PropertyUi propertyUi;
+    private final boolean input;
+
+
+    public ConnectorButton(Drawable image, PropertyUi propertyUi, boolean input) {
+        this(image, propertyUi, input, 0, 0);
     }
 
-    public ConnectorButton(Skin skin, String styleName) {
-        super(skin, styleName);
-    }
-
-    public ConnectorButton(ImageButtonStyle style) {
-        super(style);
-    }
-
-    public ConnectorButton(Drawable imageUp) {
-        super(imageUp);
-    }
-
-    public ConnectorButton(Drawable image, float offsetX, float offsetY) {
+    public ConnectorButton(Drawable image, PropertyUi propertyUi, boolean input, float offsetX, float offsetY) {
         super(image);
+        this.input = input;
 
         this.offsetX = offsetX;
         this.offsetY = offsetY;
+        this.propertyUi = propertyUi;
     }
 
-    public ConnectorButton(Drawable imageUp,
-                           Drawable imageDown) {
-        super(imageUp, imageDown);
-    }
-
-    public ConnectorButton(Drawable imageUp,
-                           Drawable imageDown,
-                           Drawable imageChecked) {
-        super(imageUp, imageDown, imageChecked);
-    }
 
     public void setOffset(float x, float y) {
         offsetX = x;
@@ -70,6 +53,14 @@ public class ConnectorButton extends ImageButton {
 
     public void setOffsetY(float offsetY) {
         this.offsetY = offsetY;
+    }
+
+    public PropertyUi getPropertyUi() {
+        return propertyUi;
+    }
+
+    public boolean isInput() {
+        return input;
     }
 
     public void setPrefSize(float width, float height) {
