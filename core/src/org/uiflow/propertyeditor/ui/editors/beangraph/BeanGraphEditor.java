@@ -1,6 +1,8 @@
 package org.uiflow.propertyeditor.ui.editors.beangraph;
 
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.math.Matrix3;
+import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -61,6 +63,10 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private Bean draggedBean;
     private final Vector2 dragOffset = new Vector2();
 
+    private Vector2 viewScale = new Vector2(1, 1);
+    private Vector2 viewPan = new Vector2(0.5f, 0);
+
+
     private final BeanGraphListener graphListener = new BeanGraphListener() {
         @Override public void onBeanAdded(BeanGraph beanGraph, Bean bean, Vector2 position) {
             addBean(bean, position, false, null);
@@ -102,6 +108,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     };
 
     private final InputListener dragListener = new InputListener() {
+
+        private final Vector2 tempPos = new Vector2();
+
         @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
             if (!event.isHandled() && button == DRAG_BUTTON) {
                 // Find touched bean
@@ -112,9 +121,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
                     draggedBean = bean;
                     dragOffset.set(beanContainer.getCenterX() - x,
                                    beanContainer.getCenterY() - y);
-                    getValue().setBeanPosition(bean,
-                                               x + dragOffset.x,
-                                               y + dragOffset.y);
+                    setBeanPos(x, y);
                     return true;
                 }
             }
@@ -124,22 +131,26 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         @Override public void touchDragged(InputEvent event, float x, float y, int pointer) {
             if (!event.isHandled() && draggedBean != null) {
                 // Handle drag
-                getValue().setBeanPosition(draggedBean,
-                                           x + dragOffset.x,
-                                           y + dragOffset.y);
+                setBeanPos(x, y);
             }
         }
 
         @Override public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
             if (!event.isHandled() && draggedBean != null && button == DRAG_BUTTON) {
                 // Set at final position
-                getValue().setBeanPosition(draggedBean,
-                                           x + dragOffset.x,
-                                           y + dragOffset.y);
+                setBeanPos(x, y);
+
                 // Stop drag
                 draggedBean = null;
             }
         }
+
+        private void setBeanPos(float x, float y) {
+            tempPos.set(x + dragOffset.x, y + dragOffset.y);
+            workAreaToGraphCoordinates(tempPos);
+            getValue().setBeanPosition(draggedBean, tempPos);
+        }
+
     };
 
     public BeanGraphEditor() {
@@ -406,7 +417,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
             workArea.addActor(beanEditorUiContainer);
 
             // Update editor UI position
-            beanEditorUiContainer.setCenterPosition(position.x, position.y);
+            setViewPosition(position, beanEditorUi);
 
             // Find new connections
             for (Property target : bean.getProperties()) {
@@ -427,13 +438,17 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
             // Get editor UI
             final Container<Actor> ui = beansToContainers.get(bean);
             // (Get rid of occasional artifacts by rounding coordinates to integers)
-            ui.setPosition((int) (position.x - ui.getWidth() * 0.5f),
-                           (int) (position.y - ui.getHeight() * 0.5f));
+            setViewPosition(position, ui);
             ui.layout();
 
             // Lift up bean and any connections connecting to it
             moveToFront(bean);
         }
+    }
+
+    private void setViewPosition(Vector2 graphPos, Actor ui) {
+        Vector2 viewPos = graphToWorkAreaCoordinates(graphPos.cpy()).sub(ui.getWidth() * 0.5f, ui.getHeight() * 0.5f);
+        ui.setPosition(viewPos.x, viewPos.y);
     }
 
     /**
@@ -571,6 +586,23 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         return null;
     }
 
+    public Vector2 graphToWorkAreaCoordinates(Vector2 graphCoordinates) {
+        float scale = Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
+        graphCoordinates.add(viewPan)
+                        .scl(viewScale)
+                        .scl(scale)
+                        .add(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f);
+        return graphCoordinates;
+    }
+
+    public Vector2 workAreaToGraphCoordinates(Vector2 workAreaCoordinates) {
+        float scale = 1f / Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
+        workAreaCoordinates.sub(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f)
+                           .scl(scale)
+                           .scl(1f / viewScale.x, 1f / viewScale.y)
+                           .sub(viewPan);
+        return workAreaCoordinates;
+    }
 
 
     @Override protected void updateValueInUi(BeanGraph value) {
@@ -581,5 +613,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         // TODO: Implement
 
     }
+
+
 
 }
