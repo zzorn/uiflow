@@ -26,6 +26,8 @@ import java.util.*;
  */
 // TODO: Highlight dragged connectors if they can make a connection or not
 // TODO: Add support for value conversion
+// TODO: Larger connector icon.  Different connector icon for connected and unconnected input / output.
+
 
 // TODO: Support pan
 // TODO: Support zoom?  Maybe keep beans fixed size, just zoom positions
