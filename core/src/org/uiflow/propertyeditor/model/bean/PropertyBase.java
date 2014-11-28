@@ -14,6 +14,7 @@ public abstract class PropertyBase implements Property {
     private final Class type;
     private Bean bean;
     private transient boolean loopCheckFlag = false;
+    private transient boolean retrievingValueFlag = false;
 
     private final List<PropertyListener> listeners = new ArrayList<PropertyListener>(4);
 
@@ -21,6 +22,14 @@ public abstract class PropertyBase implements Property {
     private PropertyDirection propertyDirection;
     private EditorConfiguration editorConfiguration;
     private Property source;
+
+
+
+    private final PropertyListener sourceListener = new BeanListenerAdapter() {
+        @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
+            notifyValueChanged(oldValue, newValue);
+        }
+    };
 
     /**
      * @param editorConfiguration the type of editor to use to edit the value of this property, and the configuration for it.
@@ -105,6 +114,9 @@ public abstract class PropertyBase implements Property {
 
         if (!listeners.contains(listener)) {
             listeners.add(listener);
+
+            System.out.println("PropertyBase.addListener " + getName());
+            System.out.println("  listener = " + listener);
         }
     }
 
@@ -125,13 +137,31 @@ public abstract class PropertyBase implements Property {
     }
 
     public final void setSource(Property source) {
-        checkSource(source);
+        if (this.source != source && source != this) {
+            checkSource(source);
 
-        Property oldSource = this.source;
+            Object oldValue = get();
 
-        this.source = source;
+            Property oldSource = this.source;
 
-        notifySourceChanged(oldSource, this.source);
+            if (this.source != null) {
+                this.source.removeListener(sourceListener);
+            }
+
+            this.source = source;
+
+            if (this.source != null) {
+                this.source.addListener(sourceListener);
+            }
+
+            notifySourceChanged(oldSource, this.source);
+
+            // Notify listeners about any value change as well
+            Object newValue = get();
+            if (oldValue != newValue) {
+                // notifyValueChanged(oldValue, newValue);
+            }
+        }
     }
 
 
@@ -152,16 +182,31 @@ public abstract class PropertyBase implements Property {
 
 
     @Override public final void setValue(Object value) {
-        if (getValue() != value) {
-            Object oldValue = getValue();
+        Object oldValue = getValue();
+        if (oldValue != value) {
             doSetValue(value);
-            notifyValueChanged(oldValue, value);
+
+            // Only notify about value change if the value returned by get() would change
+            if (source == null) {
+                notifyValueChanged(oldValue, value);
+            }
         }
     }
 
     @Override public <T> T get() {
-        if (source != null) return source.get();
-        else return getValue();
+        if (source != null) {
+            // Detect possible infinite loops
+            if (retrievingValueFlag) throw new IllegalStateException("Cyclical loop detected when trying to get value for property " + getName() + " which uses the source " + source);
+
+            retrievingValueFlag = true;
+            final T value = source.get();
+            retrievingValueFlag = false;
+
+            return value;
+        }
+        else {
+            return getValue();
+        }
     }
 
     @Override public <T> void set(T value) {

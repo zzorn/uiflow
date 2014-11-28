@@ -31,6 +31,14 @@ public enum PropertyDirection {
                (isOutput() && other.isInput());
     }
 
+    /**
+     * @return reverse direction from this direction if reverse is true, else this direction.
+     */
+    public PropertyDirection getReverse(boolean reverse) {
+        if (reverse) return getReverse();
+        else return this;
+    }
+
     public PropertyDirection getReverse() {
         switch (this) {
             case IN:

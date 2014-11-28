@@ -246,7 +246,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
         if (isUiCreated()) {
             // Create editor
-            BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT, true, mirrorDirections, directionToShow);
+            BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT, true, mirrorDirections, directionToShow, getConfiguration().isHideEditorWhenSourceUsed());
             beanEditor.setValue(bean);
             beanEditors.put(bean, beanEditor);
 

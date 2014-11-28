@@ -43,7 +43,7 @@ public class DefaultUiContext implements UiContext {
     private final Stage stage;
 
     private Map<Class, Color> typeColors = new HashMap<Class, Color>();
-    private Random random = new Random();
+    private Random random = new Random(42);
 
     /**
      * Uses the default skin and a font height depending on the height of the screen, and no custom textureAtlas.
@@ -137,7 +137,7 @@ public class DefaultUiContext implements UiContext {
 
         Color color = typeColors.get(type);
         if (color == null) {
-            color = randomColor(type.hashCode());
+            color = randomColor(type.getName().hashCode());
             typeColors.put(type, color);
         }
 

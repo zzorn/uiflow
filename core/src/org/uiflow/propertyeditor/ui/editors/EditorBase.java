@@ -48,13 +48,9 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
 
             onValueChanged(oldValue, editedValue);
 
-            updateUiIfNeeded();
-        }
-    }
-
-    private void updateUiIfNeeded() {
-        if (isUiCreated() && !sendingEditUpdate) {
-            updateValueInUi(editedValue);
+            if (isUiCreated() && !sendingEditUpdate) {
+                updateValueInUi(editedValue);
+            }
         }
     }
 
@@ -63,9 +59,11 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
     }
 
     @Override public final void setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        if (isUiCreated()) {
-            setDisabled(!enabled);
+        if (this.enabled != enabled) {
+            this.enabled = enabled;
+            if (isUiCreated()) {
+                setDisabled(!enabled);
+            }
         }
     }
 
@@ -102,18 +100,13 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
     /**
      * Should be called when the value is changed in the UI.
      */
-    protected final void notifyValueEdited(T newValue) {
-        if (enabled) {
+    protected final void notifyValueEditedInUi(T newValue) {
+        if (enabled && !sendingEditUpdate) {
             sendingEditUpdate = true;
 
-            if (newValue != editedValue) {
-                setValue(newValue);
-            }
-            else {
-                updateUiIfNeeded();
-            }
+            setValue(newValue);
 
-            notifyValueEdited();
+            notifyValueEditedInUi();
 
             sendingEditUpdate = false;
         }
@@ -144,7 +137,7 @@ public abstract class EditorBase<T, C extends EditorConfiguration> extends FlowW
     /**
      * Notifies all listeners that the value has been edited.
      */
-    private void notifyValueEdited() {
+    private void notifyValueEditedInUi() {
         for (EditorListener<T> listener : listeners) {
             listener.onValueEdited(this, editedValue);
         }

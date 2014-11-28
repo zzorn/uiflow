@@ -72,12 +72,13 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
             if (value != null) {
                 numberFieldUpdating = true;
                 updateValueInUi(value);
-                notifyValueEdited(value);
+                notifyValueEditedInUi(value);
                 numberFieldUpdating = false;
             }
             return false;
         }
     };
+    private Table buttons;
 
     public NumberEditor() {
         this(NumberEditorConfiguration.DOUBLE_DEFAULT);
@@ -103,6 +104,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
         tuneUpButton    = createChangeButton(uiContext, "arrow_up2", 0, true, SCALE_FACTOR, false);
         tuneDownButton  = createChangeButton(uiContext, "arrow_down2", 0, true, 1 / SCALE_FACTOR, false);
 
+        buttons = new Table(uiContext.getSkin());
         final float buttonHeights = numberField.getHeight() / 2;
         final float buttonWidths = buttonHeights;
         Table incDec = new Table(uiContext.getSkin());
@@ -112,6 +114,8 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
         Table mulDiv = new Table(uiContext.getSkin());
         mulDiv.add(tuneUpButton).size(buttonWidths, buttonHeights).row();
         mulDiv.add(tuneDownButton).size(buttonWidths, buttonHeights);
+        buttons.add(incDec);
+        buttons.add(mulDiv);
 
         // Set number field width
         final float digitWidth = numberField.getStyle().font.getBounds("0").width;
@@ -127,6 +131,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                                 configuration.isLogarithmic(),
                                 configuration.isUseOrigin(),
                                 configuration.getOriginValue());
+
         slider.addListener(new FlowSlider.FlowSliderListener() {
             @Override public void onChanged(double newValue) {
                 // Drop last digits, as the slider is not very precise
@@ -139,18 +144,17 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                 updateValueInUi(value);
 
                 // Notify listeners
-                notifyValueEdited(value);
+                notifyValueEditedInUi(value);
             }
         });
 
         // Arrange components in the ui
         table.add(numberFieldContainer);
         if (configuration.isShowArrows()) {
-            table.add(incDec);//.padLeft(uiContext.getSmallGap());
-            table.add(mulDiv);//.padLeft(uiContext.getSmallGap());
+            table.add(buttons);
         }
         if (configuration.isShowSlider()) {
-            table.add(slider).height(numberField.getHeight()).fill().expand();//.padLeft(uiContext.getSmallGap());
+            table.add(slider).height(numberField.getHeight()).fill().expand();
         }
 
         numberField.addListener(numberFieldListener);
@@ -306,7 +310,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                 updateValueInUi(result);
 
                 // Notify listeners
-                notifyValueEdited(result);
+                notifyValueEditedInUi(result);
             }
         }
     }
@@ -349,7 +353,7 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
                 updateValueInUi(result);
 
                 // Notify listeners
-                notifyValueEdited(result);
+                notifyValueEditedInUi(result);
             }
         }
     }
@@ -389,11 +393,17 @@ public class NumberEditor extends EditorBase<Number, NumberEditorConfiguration> 
             numberFieldListener.setPreviousText(valueAsText);
         }
 
-        if (value != null) slider.setValue(value.floatValue());
+        if (value != null) {
+            slider.setValue(value.floatValue());
+        }
     }
 
     @Override protected void setDisabled(boolean disabled) {
         numberField.setDisabled(disabled);
+        numberField.setStyle(getUiContext().getSkin()
+                                           .get(disabled ? "disabled" : "default", TextField.TextFieldStyle.class));
+        slider.setDisabled(disabled);
+        buttons.setVisible(!disabled);
     }
 
     private Number parseNumberFromText(Class<? extends Number> numberType, final String text) {

@@ -10,9 +10,11 @@ import org.uiflow.propertyeditor.model.bean.BeanListener;
 import org.uiflow.propertyeditor.model.bean.Property;
 import org.uiflow.propertyeditor.model.bean.PropertyDirection;
 import org.uiflow.propertyeditor.model.bean.dynamic.DynamicBean;
+import org.uiflow.propertyeditor.model.bean.dynamic.DynamicProperty;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
 import org.uiflow.propertyeditor.model.beangraph.DefaultBeanGraph;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
+import org.uiflow.propertyeditor.ui.editors.beangraph.BeanGraphConfiguration;
 import org.uiflow.propertyeditor.ui.editors.beangraph.BeanGraphEditor;
 import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
 import org.uiflow.utils.colorfunction.ColorGradient;
@@ -61,7 +63,7 @@ public class UiFlowExample extends ApplicationAdapter {
 
         // Test bean graph
         BeanGraph beanGraph = new DefaultBeanGraph("Test Graph");
-        beanGraph.addBean(createTestBean(), 40, 40);
+//        beanGraph.addBean(createTestBean(), 40, 40);
         final Bean beanA = beanGraph.addBean(createTestBean(), 340, 340);
         final Bean beanB = beanGraph.addBean(createTestBean(), 740, 340);
         final Property x = beanGraph.getInterfaceBean().addFloat("x", 0, PropertyDirection.IN);
@@ -118,8 +120,22 @@ public class UiFlowExample extends ApplicationAdapter {
         DynamicBean appearance = new DynamicBean("Appearance");
         appearance.addString("Hat", "Top Hat");
         appearance.addDouble("Height", 5, 0, 10, true, false, ColorGradient.BLUE_RED);
-        appearance.addString("Color");
         testBean.addBean("Appearance", appearance, LabelLocation.LEFT);
+        testBean.addString("Color", "FF00FF", 1, PropertyDirection.IN);
+        testBean.addString("Favourite Saying", "Zug Zug", 1, PropertyDirection.OUT);
+
+        /* Yes, you can add a BeanGraph as a property to a Bean, and you get an editor in the bean.  No, it's not very practical.
+        final Property property = testBean.addProperty("We Have To Go Deeper",
+                                                       BeanGraph.class,
+                                                       new BeanGraphConfiguration(),
+                                                       PropertyDirection.IN);
+
+        final DefaultBeanGraph nestedGraph = new DefaultBeanGraph("Ho Ho Hoo");
+        nestedGraph.addBean(new DynamicBean("FooFoo", new DynamicProperty("Abcdf", Double.class, new NumberEditorConfiguration())), 50, 50);
+        nestedGraph.getInterfaceBean().addDouble("A");
+        nestedGraph.getInterfaceBean().addDouble("B");
+        property.setValue(nestedGraph);
+        */
 
         return testBean;
     }

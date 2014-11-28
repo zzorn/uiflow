@@ -1,5 +1,7 @@
 package org.uiflow.propertyeditor.model.bean;
 
+import com.badlogic.gdx.utils.Array;
+
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -8,7 +10,7 @@ import java.util.Set;
  */
 public abstract class BeanBase implements Bean {
 
-    private final Set<BeanListener> listeners = new LinkedHashSet<BeanListener>();
+    private final Array<BeanListener> listeners = new Array<BeanListener>();
 
     private final PropertyListener propertyListener = new PropertyListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
@@ -37,13 +39,13 @@ public abstract class BeanBase implements Bean {
     };
 
     @Override public final void addListener(BeanListener listener) {
-        if (!listeners.contains(listener)) {
+        if (!listeners.contains(listener, true)) {
             listeners.add(listener);
         }
     }
 
     @Override public final void removeListener(BeanListener listener) {
-        listeners.remove(listener);
+        listeners.removeValue(listener, true);
     }
 
     /**

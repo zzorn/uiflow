@@ -30,19 +30,21 @@ public class PropertyUi extends FlowWidgetBase {
     private Container<Actor> valueEditorContainer;
     private boolean disabled = false;
 
+    private final boolean hideEditorWhenSourceUsed;
+    private final boolean hideEditorWhenNoInput = true;
+    private boolean editorVisible = false;
+
     private EditorListener editorListener = new EditorListener() {
         @Override public void onValueEdited(Editor editor, Object currentValue) {
-            /*
             if (property != null) {
                 property.setValue(currentValue);
             }
-            */
         }
     };
     private final PropertyListener propertyListener = new PropertyListener() {
         @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
             if (editor != null) {
-                editor.setValue(property.getValue());
+                editor.setValue(property.get());
             }
         }
 
@@ -81,7 +83,7 @@ public class PropertyUi extends FlowWidgetBase {
      * @param labelLocation relative location of the label.
      */
     public PropertyUi(Property property, LabelLocation labelLocation) {
-        this(property, labelLocation, false, false);
+        this(property, labelLocation, false, false, true);
     }
 
     /**
@@ -90,11 +92,13 @@ public class PropertyUi extends FlowWidgetBase {
      * @param showConnectors if true, connectors for connecting a source or output property to the property will be shown.
      * @param mirrorDirections if true, an output property will be shown as an input property and vice versa.
      *                         Used for internal views of BeanGraph interfaces.
+     * @param hideEditorWhenSourceUsed if true, the editor will be hidden if a value is provided to a property by a source.
      */
-    public PropertyUi(Property property, LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections) {
+    public PropertyUi(Property property, LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections, boolean hideEditorWhenSourceUsed) {
         this.labelLocation = labelLocation;
         this.showConnectors = showConnectors;
         this.mirrorDirections = mirrorDirections;
+        this.hideEditorWhenSourceUsed = hideEditorWhenSourceUsed;
         setProperty(property);
     }
 
@@ -190,9 +194,10 @@ public class PropertyUi extends FlowWidgetBase {
 
     private void buildValueEditor() {
         // Remove old if present
+        boolean wasEditorVisible = editorVisible;
         if (editor != null && editor.isUiCreated()) {
             editor.removeListener(editorListener);
-            valueEditorContainer.removeActor(editor.getUi(getUiContext()));
+            setEditorVisible(false);
             editor.dispose();
         }
 
@@ -208,8 +213,7 @@ public class PropertyUi extends FlowWidgetBase {
             }
 
             editor.addListener(editorListener);
-            valueEditorContainer.setActor(editor.getUi(getUiContext()));
-            valueEditorContainer.fillX();
+            setEditorVisible(wasEditorVisible);
         }
 
     }
@@ -225,9 +229,12 @@ public class PropertyUi extends FlowWidgetBase {
 
             // Update edited value
             if (property != null && editor != null) {
-                editor.setValue(property.getValue());
-                editor.setEnabled(!disabled);
+                editor.setValue(property.get());
+                editor.setEnabled(!disabled && !hasSource());
             }
+
+            // Hide editor if desired
+            setEditorVisible(shouldEditorBeVisible());
 
             // Update connectors
             if (showConnectors) {
@@ -236,8 +243,7 @@ public class PropertyUi extends FlowWidgetBase {
                 outputConnector.setVisible(false);
 
                 if (property != null) {
-                    PropertyDirection direction = property.getDirection();
-                    if (mirrorDirections) direction = direction.getReverse();
+                    PropertyDirection direction = getPropertyDirection();
 
                     if (direction.isInput()) {
                         inputConnector.setVisible(true);
@@ -249,6 +255,43 @@ public class PropertyUi extends FlowWidgetBase {
                 }
             }
         }
+    }
+
+    private boolean shouldEditorBeVisible() {
+        boolean hideEditor = (hideEditorWhenSourceUsed && hasSource()) ||
+                             (hideEditorWhenNoInput && property != null && !isMirrorDirections() && !getProperty().getDirection().isInput());
+        // (If mirrorDirections is true, this is one of the interface beans, and we want to be able to provide default values for the inputs, and a fixed value for the output if it is not connected to a source, so don't hide them).
+        return !hideEditor;
+    }
+
+    private PropertyDirection getPropertyDirection() {
+        if (property != null) {
+            return property.getDirection().getReverse(mirrorDirections);
+        } else {
+            return PropertyDirection.INOUT;
+        }
+    }
+
+    private void setEditorVisible(boolean editorVisible) {
+        if (this.editorVisible != editorVisible) {
+            this.editorVisible = editorVisible;
+
+            if (editor != null && isUiCreated()) {
+                if (editorVisible) {
+                    valueEditorContainer.setActor(editor.getUi(getUiContext()));
+                    valueEditorContainer.fillX();
+                    table.layout();
+                }
+                else {
+                    valueEditorContainer.removeActor(editor.getUi(getUiContext()));
+                }
+            }
+        }
+    }
+
+    private boolean hasSource() {
+        return property != null &&
+               property.getSource() != null;
     }
 
     public void setDisabled(boolean disabled) {

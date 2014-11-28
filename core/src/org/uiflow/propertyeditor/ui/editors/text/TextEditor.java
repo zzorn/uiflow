@@ -15,7 +15,7 @@ public class TextEditor extends EditorBase<String, TextEditorConfiguration> {
 
     private final TextFieldChangeListener textFieldChangeListener = new TextFieldChangeListener(){
         @Override protected boolean onTextFieldChanged(InputEvent event, String oldValue, String newValue) {
-            notifyValueEdited(newValue);
+            notifyValueEditedInUi(newValue);
             return false;
         }
     };
@@ -36,6 +36,7 @@ public class TextEditor extends EditorBase<String, TextEditorConfiguration> {
 
     @Override protected void setDisabled(boolean disabled) {
         textWidget.setDisabled(disabled);
+        textWidget.setStyle(getUiContext().getSkin().get(disabled ? "disabled" : "default", TextField.TextFieldStyle.class));
     }
 
     @Override protected Actor createEditor(TextEditorConfiguration configuration, UiContext uiContext) {

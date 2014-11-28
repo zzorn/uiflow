@@ -22,7 +22,8 @@ com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 },
 com.badlogic.gdx.scenes.scene2d.ui.ImageButton$ImageButtonStyle: {
     default: { down: button_pressed, up: button_up},
-    toggle: { down: button_pressed, up: button_up, checked: button_checked}
+    toggle: { down: button_pressed, up: button_up, checked: button_checked},
+    disabled: { down: button_disabled, up: button_disabled, checked: button_disabled}
 },
 com.badlogic.gdx.scenes.scene2d.ui.Window$WindowStyle: {
 	default: { titleFont: default-font, background: window, titleFontColor: white },
@@ -46,6 +47,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: selection, background: field, font: default-font, fontColor: amber, cursor: cursor },
-	error: { selection: selection, background: field_error, font: default-font, fontColor: white, cursor: cursor }
+	error: { selection: selection, background: field_error, font: default-font, fontColor: white, cursor: cursor },
+	disabled: { selection: selection, background: field, font: default-font, fontColor: lightgrey, cursor: cursor }
 },
 }

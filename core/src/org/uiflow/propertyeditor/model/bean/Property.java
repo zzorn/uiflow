@@ -3,7 +3,7 @@ package org.uiflow.propertyeditor.model.bean;
 import org.uiflow.propertyeditor.ui.editors.EditorConfiguration;
 
 /**
- *
+ * Property with name, type and a value.  May also have another property as source, in which case it will retrieve its value from there.
  */
 // TODO: Recursive references may be solved either by not allowing them, or by moving values to outputs during update steps.
 // TODO  That is an implementation specific decision thou.  Other approaches might be possible as well.
@@ -45,7 +45,6 @@ public interface Property {
     /**
      * @return current value of this property, or the value of the source property if it is set.
      * If the source property points back to this Property as its source, an exception may be thrown.
-     * TODO: Implement by setting a flag during the call, throwing exception if flag is set when get is called.
      */
     <T> T get();
 

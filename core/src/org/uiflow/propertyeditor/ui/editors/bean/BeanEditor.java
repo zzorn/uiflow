@@ -18,6 +18,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     private final boolean showConnectors;
     private final boolean mirrorDirections;
     private final PropertyDirection directionsToShow;
+    private final boolean hideEditorWhenSourceUsed;
 
     private final LinkedHashMap<Property, PropertyUi> propertyEditors = new LinkedHashMap<Property, PropertyUi>();
 
@@ -27,7 +28,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
     private final BeanListener beanListener = new BeanListenerAdapter() {
         @Override public void onValueChanged(Bean bean, Property property, Object oldValue, Object newValue) {
-            notifyValueEdited(bean);
+            notifyValueEditedInUi(bean);
         }
 
         @Override public void onBeanNameChanged(Bean bean) {
@@ -40,7 +41,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
             if (shouldShowProperty(property)) {
                 addPropertyUi(property);
                 rebuildPropertyList();
-                notifyValueEdited(bean);
+                notifyValueEditedInUi(bean);
             }
         }
 
@@ -49,7 +50,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
             if (removed) {
                 rebuildPropertyList();
             }
-            notifyValueEdited(bean);
+            notifyValueEditedInUi(bean);
         }
     };
 
@@ -89,7 +90,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
      *                         Used for internal views of BeanGraph interfaces.
      */
     public BeanEditor(BeanEditorConfiguration configuration, boolean showConnectors, boolean mirrorDirections) {
-        this(configuration.getLabelLocation(), showConnectors, mirrorDirections, null);
+        this(configuration.getLabelLocation(), showConnectors, mirrorDirections, null, true);
     }
 
     /**
@@ -98,7 +99,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
      * @param labelLocation location of the property labels relative the the property editors.
      */
     public BeanEditor(LabelLocation labelLocation) {
-        this(labelLocation, false, false, null);
+        this(labelLocation, false, false, null, true);
     }
 
     /**
@@ -109,12 +110,14 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
      * @param mirrorDirections if true, output properties will be shown as input properties and vice versa.
      *                         Used for internal views of BeanGraph interfaces.
      * @param directionsToShow the property directions to show, or null if all should be shown.
+     * @param hideEditorWhenSourceUsed if true, the editor will be hidden if a value is provided to a property by a source.
      */
-    public BeanEditor(LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections, PropertyDirection directionsToShow) {
+    public BeanEditor(LabelLocation labelLocation, boolean showConnectors, boolean mirrorDirections, PropertyDirection directionsToShow, boolean hideEditorWhenSourceUsed) {
         super(new BeanEditorConfiguration(labelLocation));
         this.showConnectors = showConnectors;
         this.mirrorDirections = mirrorDirections;
         this.directionsToShow = directionsToShow;
+        this.hideEditorWhenSourceUsed = hideEditorWhenSourceUsed;
     }
 
     /**
@@ -270,7 +273,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
     private void addPropertyUi(Property property) {
         if (isUiCreated()) {
             // Create editor
-            final PropertyUi propertyUi = new PropertyUi(property, getConfiguration().getLabelLocation(), showConnectors, mirrorDirections);
+            final PropertyUi propertyUi = new PropertyUi(property, getConfiguration().getLabelLocation(), showConnectors, mirrorDirections, hideEditorWhenSourceUsed);
 
             // Add to lookup map
             propertyEditors.put(property, propertyUi);
