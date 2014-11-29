@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.utils.Array;
+import org.uiflow.propertyeditor.ui.editors.beangraph.Connection;
 
 /**
  * An ImageButton that actually honors and uses its color attribute.
@@ -17,15 +19,20 @@ public class ConnectorButton extends ImageButton {
     private float prefH = -1;
 
     private final PropertyUi propertyUi;
+    private final Drawable connectedImage;
+    private final Drawable unconnectedImage;
     private final boolean input;
+    private final Array<Connection> connections = new Array<Connection>();
 
 
-    public ConnectorButton(Drawable image, PropertyUi propertyUi, boolean input) {
-        this(image, propertyUi, input, 0, 0);
+    public ConnectorButton(Drawable connectedImage, Drawable unconnectedImage, PropertyUi propertyUi, boolean input) {
+        this(connectedImage, unconnectedImage, propertyUi, input, 0, 0);
     }
 
-    public ConnectorButton(Drawable image, PropertyUi propertyUi, boolean input, float offsetX, float offsetY) {
-        super(image);
+    public ConnectorButton(Drawable connectedImage, Drawable unconnectedImage, PropertyUi propertyUi, boolean input, float offsetX, float offsetY) {
+        super(unconnectedImage);
+        this.connectedImage = connectedImage;
+        this.unconnectedImage = unconnectedImage;
         this.input = input;
 
         this.offsetX = offsetX;
@@ -94,5 +101,23 @@ public class ConnectorButton extends ImageButton {
 
     @Override public float getPrefHeight() {
         return prefH < 0 ? super.getPrefHeight() : prefH;
+    }
+
+    public void addConnection(Connection connection) {
+        connections.add(connection);
+        updateConnectorAppearance();
+    }
+
+    public void removeConnection(Connection connection) {
+        connections.removeValue(connection, true);
+        updateConnectorAppearance();
+    }
+
+    public boolean isConnected() {
+        return connections.size > 0;
+    }
+
+    private void updateConnectorAppearance() {
+        getStyle().imageUp = isConnected() ? connectedImage : unconnectedImage;
     }
 }

@@ -302,17 +302,17 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
                 switch (labelLocation) {
                     case LEFT:
-                        if (inputConnector != null) propertyList.add(inputConnector);
+                        if (inputConnector != null) propertyList.add(inputConnector).fill().expandY();
                         propertyList.add(label).left();
                         propertyList.add(ui).expandX().fillX();
-                        if (outputConnector != null) propertyList.add(outputConnector);
+                        if (outputConnector != null) propertyList.add(outputConnector).fill().expandY();
                         propertyList.row();
                         break;
                     case ABOVE:
                         Table t = new Table();
-                        if (inputConnector != null) t.add(inputConnector);
+                        if (inputConnector != null) t.add(inputConnector).fill().expandY();
                         t.add(label).left().expandX().fillX();
-                        if (outputConnector != null) t.add(outputConnector);
+                        if (outputConnector != null) t.add(outputConnector).fill().expandY();
 
                         propertyList.add(t).expandX().fillX();
                         propertyList.row();
@@ -322,16 +322,16 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
                         propertyList.add(ui).expandX().fillX().row();
 
                         Table t2 = new Table();
-                        if (inputConnector != null) t2.add(inputConnector);
+                        if (inputConnector != null) t2.add(inputConnector).fill().expandY();
                         t2.add(label).left().expandX().fillX();
-                        if (outputConnector != null) t2.add(outputConnector);
+                        if (outputConnector != null) t2.add(outputConnector).fill().expandY();
                         propertyList.add(t2).left().expandX().fillX();
                         propertyList.row();
                         break;
                     case NONE:
-                        if (inputConnector != null) propertyList.add(inputConnector);
+                        if (inputConnector != null) propertyList.add(inputConnector).fill().expandY();
                         propertyList.add(ui).expandX().fillX();
-                        if (outputConnector != null) propertyList.add(outputConnector);
+                        if (outputConnector != null) propertyList.add(outputConnector).fill().expandY();
                         propertyList.row();
                         break;
                 }

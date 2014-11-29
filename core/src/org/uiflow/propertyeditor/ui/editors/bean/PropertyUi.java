@@ -16,6 +16,7 @@ import org.uiflow.widgets.FlowWidgetBase;
 /**
  * Helper class for handling the edition of one property
  */
+// TODO: Keep track of output connections from a connector, so that we can change its type depending on if it is connected or not.
 public class PropertyUi extends FlowWidgetBase {
 
     private Property property;
@@ -181,9 +182,10 @@ public class PropertyUi extends FlowWidgetBase {
 
     private ConnectorButton createConnector(UiContext uiContext, final boolean isInput) {
         // Get connector icon
-        final Drawable connectorImage = uiContext.getSkin().getDrawable("connector");
+        final Drawable connectedImage = uiContext.getSkin().getDrawable(isInput ? "connector_in" : "connector_out");
+        final Drawable unconnectedImage = uiContext.getSkin().getDrawable("connector_unconnected");
 
-        final ConnectorButton connector = new ConnectorButton(connectorImage, this, isInput);
+        final ConnectorButton connector = new ConnectorButton(connectedImage, unconnectedImage, this, isInput);
         connector.getImage().setScaling(Scaling.fill);
 
         // Color connector according to property type

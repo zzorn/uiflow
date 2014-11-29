@@ -22,14 +22,16 @@ public class Connection extends Actor {
     private static final int MAX_SEGMENT_COUNT = 200;
     private static final int MIN_SEGMENT_COUNT = 20;
     private static final String SEGMENT_NAME = "connection_segment_soft";
-    private static final String END_POINT_NAME = "connector";
+    private static final String SEGMENT_NAME_UNCONNECTED = "connection_segment_soft_unconnected";
     private static final float DEFAULT_SEGMENT_SCALE = 0.8f;
     private static final float SEGMENT_DENSITY = 4f;
-    private static float segmentLength = 10f;
     private static final int BORDER_FUDGE_FACTOR = 8;
 
-    private final TextureRegion segmentImage;
-    private final Drawable endPointImage;
+    private final TextureRegion unconnectedSegmentImage;
+    private final TextureRegion connectedSegmentImage;
+    private final Drawable outputConnectorImage;
+    private final Drawable inputConnectorImage;
+    private final Drawable unconnectedConnectorImage;
 
     private PropertyUi source;
     private PropertyUi target;
@@ -39,10 +41,14 @@ public class Connection extends Actor {
     private Vector2 pos = new Vector2();
     private Vector2 oldPos = new Vector2();
     private Vector2 t = new Vector2();
+    private Color startColor = new Color();
+    private Color endColor = new Color();
     private Color color = new Color();
 
     private final UiContext uiContext;
     private float segmentScale = DEFAULT_SEGMENT_SCALE;
+
+    private ConnectionHighlight highlightState = ConnectionHighlight.DRAGGED;
 
     public Connection(UiContext uiContext) {
         this(uiContext, null, null);
@@ -52,12 +58,17 @@ public class Connection extends Actor {
         Check.notNull(uiContext, "uiContext");
 
         this.uiContext = uiContext;
-        this.segmentImage = uiContext.getSkin().getRegion(SEGMENT_NAME);
-        this.endPointImage = uiContext.getSkin().getDrawable(END_POINT_NAME);
-        this.source = source;
-        this.target = target;
+        this.connectedSegmentImage = uiContext.getSkin().getRegion(SEGMENT_NAME);
+        this.unconnectedSegmentImage = uiContext.getSkin().getRegion(SEGMENT_NAME_UNCONNECTED);
 
-        segmentLength = segmentImage.getRegionWidth() * (1f / SEGMENT_DENSITY);
+        this.inputConnectorImage = uiContext.getSkin().getDrawable("connector_in");
+        this.outputConnectorImage = uiContext.getSkin().getDrawable("connector_out");
+        this.unconnectedConnectorImage= uiContext.getSkin().getDrawable("connector_unconnected");
+
+        setSource(source);
+        setTarget(target);
+
+        updateHighlightState();
     }
 
     public PropertyUi getSource() {
@@ -81,7 +92,13 @@ public class Connection extends Actor {
     }
 
     public void setSource(PropertyUi source) {
+        if (this.source != null) this.source.getOutputConnector().removeConnection(this);
+
         this.source = source;
+
+        if (this.source != null) this.source.getOutputConnector().addConnection(this);
+
+        updateHighlightState();
     }
 
     public PropertyUi getTarget() {
@@ -89,7 +106,13 @@ public class Connection extends Actor {
     }
 
     public void setTarget(PropertyUi target) {
+        if (this.target != null) this.target.getInputConnector().removeConnection(this);
+
         this.target = target;
+
+        if (this.target != null) this.target.getInputConnector().addConnection(this);
+
+        updateHighlightState();
     }
 
     public void setStartPos(float x, float y) {
@@ -100,6 +123,14 @@ public class Connection extends Actor {
     public void setEndPos(float x, float y) {
         end.set(x - BORDER_FUDGE_FACTOR,
                 y - BORDER_FUDGE_FACTOR);
+    }
+
+    public ConnectionHighlight getHighlightState() {
+        return highlightState;
+    }
+
+    public void setHighlightState(ConnectionHighlight highlightState) {
+        this.highlightState = highlightState;
     }
 
     private void updateStartPos() {
@@ -119,11 +150,20 @@ public class Connection extends Actor {
         updateStartPos();
         updateEndPos();
 
+        final TextureRegion segmentImage = highlightState.getStrokeImage(getSegmentImage(),
+                                                                         connectedSegmentImage,
+                                                                         unconnectedSegmentImage);
+        float segmentLength = getSegmentImage().getRegionWidth() * (1f / SEGMENT_DENSITY);
+
         // Determine connection color based on type
-        Color startColor = getPropertyColor(source);
-        Color endColor = getPropertyColor(target);
-        if (startColor == null) startColor = endColor;
-        if (endColor == null) endColor = startColor;
+        Color sourcePropertyColor = getPropertyColor(source);
+        Color targetPropertyColor = getPropertyColor(target);
+        if (sourcePropertyColor == null) sourcePropertyColor = targetPropertyColor;
+        if (targetPropertyColor == null) targetPropertyColor = sourcePropertyColor;
+        startColor.set(sourcePropertyColor);
+        endColor.set(targetPropertyColor);
+        highlightState.updateColor(startColor);
+        highlightState.updateColor(endColor);
 
         final Color oldColor = batch.getColor();
 
@@ -171,8 +211,8 @@ public class Connection extends Actor {
         }
 
         // Draw start and end connectors
-        drawEndpoint(batch, startColor, start);
-        drawEndpoint(batch, endColor, end);
+        drawEndpoint(batch, startColor, start, true, source != null);
+        drawEndpoint(batch, endColor, end, false, target != null);
 
         batch.setColor(oldColor);
     }
@@ -186,8 +226,17 @@ public class Connection extends Actor {
         }
     }
 
-    private void drawEndpoint(Batch batch, Color color, final Vector2 pos) {
+    private void drawEndpoint(Batch batch, Color color, final Vector2 pos, boolean isOutput, boolean isConnected) {
         batch.setColor(color);
+
+        Drawable endPointImage;
+        if (!isConnected && highlightState != ConnectionHighlight.ACCEPTABLE) {
+            endPointImage = unconnectedConnectorImage;
+        }
+        else {
+            endPointImage = isOutput ? outputConnectorImage : inputConnectorImage;
+        }
+
         final float w = endPointImage.getMinWidth();
         final float h = endPointImage.getMinHeight();
         endPointImage.draw(batch,
@@ -253,4 +302,98 @@ public class Connection extends Actor {
                (source == propertyUi ||
                 target == propertyUi);
     }
+
+    private TextureRegion getSegmentImage() {
+        if (source != null && target != null) {
+            return connectedSegmentImage;
+        }
+        else {
+            return unconnectedSegmentImage;
+        }
+    }
+
+    public boolean canConnectTo(PropertyUi propertyUi, boolean providedUiIsTarget) {
+        if (source != null && target != null) return false;
+        if (source == null && target == null) return false;
+        if (propertyUi == null || propertyUi.getProperty() == null) return false;
+
+        if (providedUiIsTarget) {
+            return source != null && propertyUi.getProperty().canUseSource(source.getProperty());
+        }
+        else {
+            return target != null && target.getProperty().canUseSource(propertyUi.getProperty());
+        }
+    }
+
+    public void connectTo(PropertyUi propertyUi, boolean providedUiIsTarget) {
+        if (canConnectTo(propertyUi, providedUiIsTarget)) {
+            if (providedUiIsTarget) {
+                setTarget(propertyUi);
+            }
+            else {
+                setSource(propertyUi);
+            }
+
+            createConnection();
+            updateHighlightState();
+        }
+        else {
+            throw new IllegalArgumentException("Can not connect to the specified property ui");
+        }
+    }
+
+    private void updateHighlightState() {
+        if (source != null && target != null) {
+            highlightState = ConnectionHighlight.CONNECTED;
+        }
+        else {
+            highlightState = ConnectionHighlight.DRAGGED;
+        }
+    }
+
+    public void dispose() {
+        setSource(null);
+        setTarget(null);
+    }
+
+    public static enum ConnectionHighlight {
+        CONNECTED,
+        DRAGGED,
+        ACCEPTABLE,
+        INVALID
+        ;
+
+        Color updateColor(Color originalColor) {
+            switch (this) {
+                case CONNECTED:
+                    return originalColor;
+                case DRAGGED:
+                    return originalColor.lerp(Color.BLACK, 0.25f);
+                case ACCEPTABLE:
+                    return originalColor;
+                case INVALID:
+                    return originalColor.lerp(Color.BLACK, 0.5f);
+                default:
+                    throw new IllegalArgumentException("Unknown case");
+            }
+        }
+
+        TextureRegion getStrokeImage(TextureRegion normal, TextureRegion connected, TextureRegion unconnected) {
+            switch (this) {
+                case CONNECTED:
+                    return normal;
+                case DRAGGED:
+                    return unconnected;
+                case ACCEPTABLE:
+                    return connected;
+                case INVALID:
+                    return unconnected;
+                default:
+                    throw new IllegalArgumentException("Unknown case");
+            }
+        }
+
+
+    }
+
 }

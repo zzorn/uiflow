@@ -26,10 +26,7 @@ import java.util.*;
 /**
  *
  */
-// TODO: Highlight dragged connectors if they can make a connection or not
 // TODO: Add support for value conversion
-// TODO: Larger connector icon.  Different connector icon for connected and unconnected input / output.
-
 
 // TODO: Support deleting beans
 // TODO: Support bean palettes that can be used to add new beans to a graph?
@@ -392,6 +389,23 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
                         draggedConnection.setEndPos(stageX, stageY);
                     }
 
+                    // Check if we could connect it here
+                    final ConnectorButton connectorButton = getParentOfType(ConnectorButton.class, getActorAt(event));
+                    if (connectorButton != null) {
+                        final boolean isTarget = connectorButton.isInput();
+                        final PropertyUi propertyUi = connectorButton.getPropertyUi();
+                        if (draggedConnection.canConnectTo(propertyUi, isTarget)) {
+                            draggedConnection.setHighlightState(Connection.ConnectionHighlight.ACCEPTABLE);
+                        }
+                        else {
+                            draggedConnection.setHighlightState(Connection.ConnectionHighlight.INVALID);
+                        }
+                    }
+                    else {
+                        draggedConnection.setHighlightState(Connection.ConnectionHighlight.DRAGGED);
+                    }
+
+
                     return true;
                 }
                 else {
@@ -401,11 +415,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
             private void connect(final PropertyUi propertyUi, final boolean providedUiIsTarget) {
                 if (draggedConnection != null) {
-                    if (providedUiIsTarget) draggedConnection.setTarget(propertyUi);
-                    else draggedConnection.setSource(propertyUi);
-
-                    if (draggedConnection.isAcceptable()) {
-                        draggedConnection.createConnection();
+                    if (draggedConnection.canConnectTo(propertyUi, providedUiIsTarget)) {
+                        // Connect
+                        draggedConnection.connectTo(propertyUi, providedUiIsTarget);
                     }
                     else {
                         // Wasn't acceptable, remove connection
@@ -636,6 +648,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     }
 
     private void removeUnfinishedConnection(Connection connection) {
+        connection.dispose();
         connectionLayer.removeActor(connection);
         connections.remove(connection);
     }
@@ -666,6 +679,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
                 connection.getTargetProperty() == target) {
                 iterator.remove();
                 connectionLayer.removeActor(connection);
+                connection.dispose();
             }
         }
     }
@@ -684,6 +698,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
                 connection.getTargetProperty() == removedProperty) {
                 iterator.remove();
                 connectionLayer.removeActor(connection);
+                connection.dispose();
             }
         }
     }
