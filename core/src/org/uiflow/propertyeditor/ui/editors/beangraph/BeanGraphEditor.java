@@ -31,7 +31,7 @@ import java.util.*;
 // TODO: Add selection support to beans (click, ctrl-click, or ctrl-drag / left mouse drag).  Show selected beans with highlighted background and border.  Click background area once to clear selection)
 // TODO: Support deleting selected beans (delete, or delete button in UI)
 // TODO: Support creating a group of selected beans
-// TODO: Project concept.  Has a list of (or tree, or hierarchy, or tagged) bean (graph)s.  Importing other projects as libraries?
+// TODO: Project concept.  Has a list of (or tree, or hierarchy, or tagged) bean (graph)s.  Importing other projects as libraries?  Concept of default / root bean?
 // TODO: Support bean palettes that can be used to add new beans to a graph (either other beans/bean graphs from the current project, or beans/beangraphs from builtin projects or imported projects.
 
 // TODO: Add support for value conversion
@@ -43,6 +43,8 @@ import java.util.*;
 
 // TODO: Adjust bean feature size (font, hiding editors, connection width, connector size) depending on zoom level
 // TODO: Support closing and opening animations
+
+// TODO: Support for passing beans as parameters to bean graphs (output from bean title, input to bean title, declared inputs and outputs of the target bean should be found on the source bean passed in (name and type match (or type conversion available?)).  Parameter is bean graph or matching default bean.  Extra inputs on the parameter can be filled in at call site, will either be updated live or bound to inputs when passed in, depending on bean implementations.
 
 // TODO: Add preview component
 // TODO: Some kind of procedural generator example.
