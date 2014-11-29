@@ -24,18 +24,25 @@ import org.uiflow.utils.ScrollInputListener;
 import java.util.*;
 
 /**
- *
+ * Editor for BeanGraphs.
  */
+// TODO: Smaller font, shrink editors to normal UI size where possible.
+
+// TODO: Add selection support to beans (click, ctrl-click, or ctrl-drag / left mouse drag).  Show selected beans with highlighted background and border.  Click background area once to clear selection)
+// TODO: Support deleting selected beans (delete, or delete button in UI)
+// TODO: Support creating a group of selected beans
+// TODO: Project concept.  Has a list of bean graphs.  Importing other projects as libraries?
+// TODO: Support bean palettes that can be used to add new beans to a graph (either other beans/bean graphs from the current project, or beans/beangraphs from builtin projects or imported projects.
+
 // TODO: Add support for value conversion
 
-// TODO: Support deleting beans
-// TODO: Support bean palettes that can be used to add new beans to a graph?
-// TODO: How to support undo/redo or version control?
-// TODO: Selecting beans and creating a group
-// TODO: Support closing and opening animations
-// TODO: Copying a bean by link by default
+// TODO: How to support undo/redo or version control? - handle undo-redo on the project model level?  Listen to edits, removals, etc, put them in edit history.
+
+// TODO: Add support for copying a bean (linking to common source and updating from it, or making a new deep copy)
 // TODO: Add support for making a group unique (breaking link to common source)
+
 // TODO: Adjust bean feature size (font, hiding editors, connection width, connector size) depending on zoom level
+// TODO: Support closing and opening animations
 
 // TODO: Add preview component
 // TODO: Some kind of procedural generator example.
