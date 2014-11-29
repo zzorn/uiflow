@@ -31,7 +31,7 @@ import java.util.*;
 // TODO: Add selection support to beans (click, ctrl-click, or ctrl-drag / left mouse drag).  Show selected beans with highlighted background and border.  Click background area once to clear selection)
 // TODO: Support deleting selected beans (delete, or delete button in UI)
 // TODO: Support creating a group of selected beans
-// TODO: Project concept.  Has a list of bean graphs.  Importing other projects as libraries?
+// TODO: Project concept.  Has a list of (or tree, or hierarchy, or tagged) bean (graph)s.  Importing other projects as libraries?
 // TODO: Support bean palettes that can be used to add new beans to a graph (either other beans/bean graphs from the current project, or beans/beangraphs from builtin projects or imported projects.
 
 // TODO: Add support for value conversion
