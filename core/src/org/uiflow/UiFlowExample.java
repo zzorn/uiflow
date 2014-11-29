@@ -64,8 +64,8 @@ public class UiFlowExample extends ApplicationAdapter {
         // Test bean graph
         BeanGraph beanGraph = new DefaultBeanGraph("Test Graph");
 //        beanGraph.addBean(createTestBean(), 40, 40);
-        final Bean beanA = beanGraph.addBean(createTestBean(), 340, 340);
-        final Bean beanB = beanGraph.addBean(createTestBean(), 740, 340);
+        final Bean beanA = beanGraph.addBean(createTestBean(), -1, 0.5f);
+        final Bean beanB = beanGraph.addBean(createTestBean(), 1, 0.5f);
         final Property x = beanGraph.getInterfaceBean().addFloat("x", 0, PropertyDirection.IN);
         final Property y = beanGraph.getInterfaceBean().addFloat("y", 0, PropertyDirection.IN);
         final Property result = beanGraph.getInterfaceBean().addDouble("result", 0, PropertyDirection.OUT);

@@ -8,7 +8,7 @@ import org.uiflow.UiContext;
 import org.uiflow.utils.ScrollInputListener;
 import org.uiflow.utils.TextFieldChangeListener;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
-import org.uiflow.propertyeditor.ui.widgets.FlowSlider;
+import org.uiflow.widgets.FlowSlider;
 import org.uiflow.utils.MathUtils;
 
 import java.text.DecimalFormat;

@@ -1,8 +1,6 @@
 package org.uiflow.propertyeditor.ui.editors.beangraph;
 
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.math.Matrix3;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -20,6 +18,8 @@ import org.uiflow.propertyeditor.ui.editors.bean.ConnectorButton;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
 import org.uiflow.propertyeditor.ui.editors.bean.PropertyUi;
 import org.uiflow.utils.Check;
+import org.uiflow.utils.MathUtils;
+import org.uiflow.utils.ScrollInputListener;
 
 import java.util.*;
 
@@ -31,8 +31,6 @@ import java.util.*;
 // TODO: Larger connector icon.  Different connector icon for connected and unconnected input / output.
 
 
-// TODO: Support pan
-// TODO: Support zoom?  Maybe keep beans fixed size, just zoom positions
 // TODO: Support deleting beans
 // TODO: Support bean palettes that can be used to add new beans to a graph?
 // TODO: How to support undo/redo or version control?
@@ -40,6 +38,7 @@ import java.util.*;
 // TODO: Support closing and opening animations
 // TODO: Copying a bean by link by default
 // TODO: Add support for making a group unique (breaking link to common source)
+// TODO: Adjust bean feature size (font, hiding editors, connection width, connector size) depending on zoom level
 
 // TODO: Add preview component
 // TODO: Some kind of procedural generator example.
@@ -50,7 +49,11 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private static final int DRAG_BUTTON = Input.Buttons.LEFT;
 
     private static final int CONNECTION_DRAG_BUTTON = DRAG_BUTTON;
-    private static final int CANCEL_DRAG_BUTTON = Input.Buttons.RIGHT;
+    private static final int PAN_BUTTON = Input.Buttons.RIGHT;
+    private static final int CANCEL_DRAG_BUTTON = PAN_BUTTON;
+
+    private static final float MIN_ZOOM = 1f / 8f;
+    private static final float MAX_ZOOM = 8f;
 
     private Table workArea;
     private Table connectionLayer;
@@ -63,7 +66,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private Bean draggedBean;
     private final Vector2 dragOffset = new Vector2();
 
-    private Vector2 viewScale = new Vector2(1, 1);
+    private float zoom = 1;
     private Vector2 viewPan = new Vector2(0.5f, 0);
 
 
@@ -114,15 +117,17 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
             if (!event.isHandled() && button == DRAG_BUTTON) {
                 // Find touched bean
-                final Actor beanContainer = getChildIn(BeanGraphEditor.this.workArea, event);
-                final Bean bean = containersToBeans.get(beanContainer);
-                if (bean != null) {
-                    // Start drag
-                    draggedBean = bean;
-                    dragOffset.set(beanContainer.getCenterX() - x,
-                                   beanContainer.getCenterY() - y);
-                    setBeanPos(x, y);
-                    return true;
+                final Actor beanContainer = getChildAt(BeanGraphEditor.this.workArea, event, false);
+                if (beanContainer instanceof Container) {
+                    final Bean bean = containersToBeans.get(beanContainer);
+                    if (bean != null) {
+                        // Start drag
+                        draggedBean = bean;
+                        dragOffset.set(beanContainer.getCenterX() - x,
+                                       beanContainer.getCenterY() - y);
+                        setBeanPos(x, y);
+                        return true;
+                    }
                 }
             }
             return false;
@@ -167,7 +172,14 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         final Table table = new Table(uiContext.getSkin());
         table.setBackground(uiContext.getSkin().getDrawable(EDITOR_BACKGROUND));
 
-        workArea = new Table(uiContext.getSkin());
+        workArea = new Table(uiContext.getSkin()) {
+            @Override public void layout() {
+                super.layout();
+
+                // When table size changed, relayout the contents
+                repositionBeanEditors();
+            }
+        };
         workArea.setClip(true);
 
         // Receive mouse events for whole area, not just children
@@ -192,10 +204,105 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         // Listen to connectors
         connectionLayer.addListener(createConnectionListener());
 
+        // Listen to pan and zoom
+        workArea.addListener(new ScrollInputListener() {
+            private boolean panning = false;
+            private Vector2 viewCenterOnPanStart = new Vector2();
+            private Vector2 panOffset = new Vector2();
+            private Vector2 panPos = new Vector2();
+
+            @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if (!event.isHandled() && !panning) {
+                    Actor actor = event.getStage().hit(event.getStageX(), event.getStageY(), false);
+                    if (actor == workArea) {
+                        panning = true;
+                        viewCenterOnPanStart.set(getViewCenter());
+                        panOffset.set(viewCenterOnPanStart);
+                        graphToWorkAreaCoordinates(panOffset);
+                        panOffset.sub(x, y);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            @Override public void touchDragged(InputEvent event, float x, float y, int pointer) {
+                if (!event.isHandled() && panning) {
+                    updatePanning(x, y);
+                }
+            }
+
+            @Override public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if (!event.isHandled() && panning) {
+                    updatePanning(x, y);
+                    panning = false;
+                }
+            }
+
+            @Override public boolean scrolled(InputEvent event, float x, float y, int amount) {
+                if (!event.isHandled()) {
+                    Actor actor = event.getStage().hit(event.getStageX(), event.getStageY(), false);
+                    if (actor == workArea) {
+                        setZoom(getZoom() * (float) Math.pow(2, -amount * 0.5), x, y);
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            private void updatePanning(float x, float y) {
+                panPos.set(x, y).add(panOffset);
+                workAreaToGraphCoordinates(panPos, viewCenterOnPanStart);
+                setViewCenter(panPos);
+            }
+        });
+
         // Add any beans that are in the current value
         rebuildGraphUi(getValue());
 
         return table;
+    }
+
+    public float getZoom() {
+        return zoom;
+    }
+
+    public void setZoom(float zoom) {
+        setZoom(zoom, workArea.getCenterX(), workArea.getCenterY());
+    }
+
+    public void setZoom(float zoom, float xOrigin, float yOrigin) {
+        Check.positive(zoom, "zoom");
+
+        // xOrigin and yOrigin should be at the same position after zooming
+        Vector2 pos = new Vector2();
+        pos.set(xOrigin, yOrigin);
+        workAreaToGraphCoordinates(pos);
+
+        this.zoom = MathUtils.clamp(zoom, MIN_ZOOM, MAX_ZOOM);
+
+        Vector2 pos2 = new Vector2();
+        pos2.set(xOrigin, yOrigin);
+        workAreaToGraphCoordinates(pos2);
+        viewPan.add(pos2.sub(pos));
+
+        repositionBeanEditors();
+    }
+
+    public Vector2 getViewCenter() {
+        return viewPan;
+    }
+
+    public void setViewCenter(Vector2 panning) {
+        setViewCenter(panning.x, panning.y);
+    }
+
+    public void setViewCenter(float x, float y) {
+        viewPan.set(x, y);
+
+        repositionBeanEditors();
     }
 
     private InputListener createConnectionListener() {
@@ -333,6 +440,17 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         return actor;
     }
 
+    private Actor getChildAt(final Actor widget, InputEvent event, final boolean touchableOnly) {
+        Actor actor = event.getStage().hit(event.getStageX(), event.getStageY(), touchableOnly);
+
+        // Find parent actor that is within the work area
+        while (actor != null && actor.getParent() != null && actor.getParent() != widget) {
+            actor = actor.getParent();
+        }
+
+        return actor;
+    }
+
     private <T extends Actor> T getParentOfType(Class<T> desiredType, Actor actor) {
         // Find parent actor that is within the work area
         while (actor != null && !desiredType.isInstance(actor)) {
@@ -398,6 +516,21 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
     }
 
+    private void repositionBeanEditors() {
+        Vector2 pos = new Vector2();
+        final BeanGraph beanGraph = getValue();
+        if (isUiCreated() && beanGraph != null) {
+            for (Map.Entry<Bean, Container<Actor>> entry : beansToContainers.entrySet()) {
+                final Bean bean = entry.getKey();
+                final Container<Actor> beanEditorUiContainer = entry.getValue();
+
+                beanGraph.getBeanPosition(bean, pos);
+                graphToWorkAreaCoordinates(pos);
+                beanEditorUiContainer.setPosition(pos.x, pos.y);
+            }
+        }
+    }
+
     private void addBean(final Bean bean, Vector2 position, boolean mirrorDirections, PropertyDirection directionToShow) {
         Check.notNull(bean, "bean");
         Check.notNull(position, "position");
@@ -439,7 +572,6 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
             final Container<Actor> ui = beansToContainers.get(bean);
             // (Get rid of occasional artifacts by rounding coordinates to integers)
             setViewPosition(position, ui);
-            ui.layout();
 
             // Lift up bean and any connections connecting to it
             moveToFront(bean);
@@ -587,20 +719,25 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     }
 
     public Vector2 graphToWorkAreaCoordinates(Vector2 graphCoordinates) {
-        float scale = Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
-        graphCoordinates.add(viewPan)
-                        .scl(viewScale)
+        float scale = 0.5f * Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
+        graphCoordinates.mulAdd(viewPan, 1)
+                        .scl(zoom)
                         .scl(scale)
                         .add(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f);
         return graphCoordinates;
     }
 
     public Vector2 workAreaToGraphCoordinates(Vector2 workAreaCoordinates) {
-        float scale = 1f / Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
+        return workAreaToGraphCoordinates(workAreaCoordinates, viewPan);
+    }
+
+    private Vector2 workAreaToGraphCoordinates(Vector2 workAreaCoordinates, Vector2 panning) {
+        float scale = 0.5f * Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
         workAreaCoordinates.sub(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f)
-                           .scl(scale)
-                           .scl(1f / viewScale.x, 1f / viewScale.y)
-                           .sub(viewPan);
+                           .scl(1f / scale)
+                           .scl(1f / zoom)
+                           .mulAdd(panning, -1);
+
         return workAreaCoordinates;
     }
 

@@ -37,7 +37,7 @@ com.badlogic.gdx.scenes.scene2d.ui.Slider$SliderStyle: {
 	default-horizontal: { background: slider, knob: button_up, knobBefore: selection},
 	default-vertical: { background: slider, knob: button_up, knobBefore: selection}
 },
-org.uiflow.propertyeditor.ui.widgets.FlowSlider$FlowSliderStyle: {
+org.uiflow.widgets.FlowSlider$FlowSliderStyle: {
 	default: { background: slider, handle: button_up, value: slider_fill, defaultValueColor: dark_amber },
 },
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {

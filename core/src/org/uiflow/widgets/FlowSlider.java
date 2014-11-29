@@ -1,4 +1,4 @@
-package org.uiflow.propertyeditor.ui.widgets;
+package org.uiflow.widgets;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Color;
