@@ -7,6 +7,9 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.freetype.FreeTypeFontGenerator;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import org.uiflow.propertyeditor.commands.CommandConfigurationProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,6 +44,7 @@ public class DefaultUiContext implements UiContext {
     private final TextureAtlas textureAtlas;
     private final float gapSize;
     private final Stage stage;
+    private final CommandConfigurationProvider commandConfigurationProvider;
 
     private Map<Class, Color> typeColors = new HashMap<Class, Color>();
     private Random random = new Random(42);
@@ -81,7 +85,7 @@ public class DefaultUiContext implements UiContext {
      * @param skin the skin to use for the ui.  If null, the default skin is loaded.
      */
     public DefaultUiContext(Stage stage, TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin) {
-        this(stage, textureAtlas, fontHeightAbsolutePixels, skin, calculatePixelSize(GAP_PIXELS_ON_PC, MIN_GAP_SIZE));
+        this(stage, textureAtlas, fontHeightAbsolutePixels, skin, calculatePixelSize(GAP_PIXELS_ON_PC, MIN_GAP_SIZE), null);
     }
 
     /**
@@ -91,7 +95,7 @@ public class DefaultUiContext implements UiContext {
      * @param skin the skin to use for the ui.  If null, the default skin is loaded.
      * @param gapSize size of the default medium gap to use in UI, in screeen pixels.
      */
-    public DefaultUiContext(Stage stage, TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin, float gapSize) {
+    public DefaultUiContext(Stage stage, TextureAtlas textureAtlas, int fontHeightAbsolutePixels, Skin skin, float gapSize, CommandConfigurationProvider commandConfigurationProvider) {
         if (skin == null) {
             skin = loadDefaultSkin(fontHeightAbsolutePixels);
         }
@@ -100,6 +104,7 @@ public class DefaultUiContext implements UiContext {
         this.gapSize = gapSize;
         this.skin = skin;
         this.textureAtlas = textureAtlas;
+        this.commandConfigurationProvider = commandConfigurationProvider;
 
         setupDefaultTypeColors();
     }
@@ -161,8 +166,23 @@ public class DefaultUiContext implements UiContext {
         if (textureAtlas != null) textureAtlas.dispose();
     }
 
+    @Override public CommandConfigurationProvider getCommandConfigurationProvider() {
+        return commandConfigurationProvider;
+    }
+
     @Override public Stage getStage() {
         return stage;
+    }
+
+    @Override public Drawable getDrawable(String id) {
+        Drawable drawable = skin.getDrawable(id);
+
+        if (drawable == null) {
+            final TextureAtlas.AtlasRegion region = textureAtlas.findRegion(id);
+            if (region != null) drawable = new TextureRegionDrawable(region);
+        }
+
+        return drawable;
     }
 
 

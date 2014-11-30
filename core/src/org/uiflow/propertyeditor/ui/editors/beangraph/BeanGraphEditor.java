@@ -30,10 +30,14 @@ import java.util.*;
  */
 // TODO: Smaller font, shrink editors to normal UI size where possible.
 
+// TODO: Create and implement and interface for widgets that accepts dropped beans and adds them to the current bean graph
+
 // TODO: Support deleting selected beans (delete, or delete button in UI)
 // TODO: Support creating a group of selected beans
 // TODO: Project concept.  Has a list of (or tree, or hierarchy, or tagged) bean (graph)s.  Importing other projects as libraries?  Concept of default / root bean?
 // TODO: Support bean palettes that can be used to add new beans to a graph (either other beans/bean graphs from the current project, or beans/beangraphs from builtin projects or imported projects.
+
+// TODO: Control bar with zoom, show all, reset zoom, snap to grid
 
 // TODO: Add support for value conversion
 

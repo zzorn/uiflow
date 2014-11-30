@@ -4,6 +4,8 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import org.uiflow.propertyeditor.commands.CommandConfigurationProvider;
 
 /**
  * A context passed around to ui widgets that are created.
@@ -42,6 +44,11 @@ public interface UiContext {
     Color getTypeColor(Class type);
 
     /**
+     * @return CommandConfigurationProvider that can be used to look up custom hotkeys, menu locations, etc. for commands.
+     */
+    CommandConfigurationProvider getCommandConfigurationProvider();
+
+    /**
      * Disposes any loaded skins, textures, and other files.
      */
     void dispose();
@@ -50,4 +57,6 @@ public interface UiContext {
      * @return the Stage that contains and handles the UI.
      */
     Stage getStage();
+
+    Drawable getDrawable(String id);
 }
