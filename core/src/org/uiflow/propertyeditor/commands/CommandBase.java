@@ -1,5 +1,6 @@
 package org.uiflow.propertyeditor.commands;
 
+import org.uiflow.propertyeditor.model.project.Project;
 import org.uiflow.utils.Check;
 
 import java.util.ArrayList;
@@ -8,35 +9,35 @@ import java.util.List;
 /**
  * Common functionality for a command.
  */
-public abstract class CommandBase<T> implements Command, UndoableCommand<T> {
+public abstract class CommandBase implements Command, ChangeProvider {
 
     private final String id;
     private CommandConfiguration commandConfiguration;
     private boolean enabled;
     private List<CommandListener> listeners = new ArrayList<CommandListener>();
-    private CommandQueue commandQueue;
 
+    /**
+     * @param id unique id for this command
+     * @param commandConfiguration configuration details for the command.
+     */
     protected CommandBase(String id,
                           CommandConfiguration commandConfiguration) {
-        this(id, commandConfiguration, null);
+        this(id, commandConfiguration, true);
     }
 
+    /**
+     * @param id unique id for this command
+     * @param commandConfiguration configuration details for the command.
+     * @param enabled true if the command is initially enabled.
+     */
     protected CommandBase(String id,
                           CommandConfiguration commandConfiguration,
-                          CommandQueue commandQueue) {
-        this(id, commandConfiguration, commandQueue, true);
-    }
-
-    protected CommandBase(String id,
-                          CommandConfiguration commandConfiguration,
-                          CommandQueue commandQueue,
                           boolean enabled) {
         Check.nonEmptyString(id, "id");
 
         this.id = id;
 
         setCommandConfiguration(commandConfiguration);
-        setQueue(commandQueue);
         setEnabled(enabled);
     }
 
@@ -67,14 +68,9 @@ public abstract class CommandBase<T> implements Command, UndoableCommand<T> {
         }
     }
 
-    @Override public final void invoke() {
-        if (commandQueue != null) {
-            // Use command queue to invoke
-            commandQueue.handleCommandInvocation(this);
-        } else {
-            // Invoke directly
-            doCommand();
-        }
+
+    @Override public final void invoke(Project project) {
+        project.applyChange(createChange(project));
     }
 
     @Override public final void addListener(CommandListener listener) {
@@ -89,13 +85,6 @@ public abstract class CommandBase<T> implements Command, UndoableCommand<T> {
         listeners.remove(listener);
     }
 
-    @Override public final CommandQueue getQueue() {
-        return commandQueue;
-    }
-
-    public final void setQueue(CommandQueue commandQueue) {
-        this.commandQueue = commandQueue;
-    }
 
     private void notifyEnableChanged() {
         for (CommandListener listener : listeners) {

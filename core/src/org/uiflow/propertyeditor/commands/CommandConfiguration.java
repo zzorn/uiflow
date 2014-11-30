@@ -1,6 +1,7 @@
 package org.uiflow.propertyeditor.commands;
 
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import org.uiflow.utils.HotKey;
 
 import java.util.List;
 
@@ -21,15 +22,15 @@ public interface CommandConfiguration {
     String getDescription();
 
     /**
-     * @return icon for this command, or null for none.
+     * @return id of icon for this command, or null for none.
      */
-    Drawable getIcon();
+    String getIconId();
 
 
     /**
      * @return hotkey to activate this command, or 0 if none.
      */
-    int getHotKey();
+    HotKey getHotKey();
 
     /**
      * @return locations in menu structures.

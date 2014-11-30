@@ -1,46 +1,32 @@
 package org.uiflow.propertyeditor.commands;
 
+import org.uiflow.propertyeditor.model.project.Project;
 import org.uiflow.utils.Check;
 
 /**
- * Delegates actual command execution
+ * Delegates change creation
  */
-public final class DelegatingCommand<T> extends CommandBase<T> {
+public final class DelegatingCommand extends CommandBase {
 
-    private final UndoableCommand<T> undoableCommand;
+    private final ChangeProvider changeProvider;
 
     public DelegatingCommand(String id,
                              CommandConfiguration commandConfiguration,
-                             UndoableCommand<T> undoableCommand) {
-        super(id, commandConfiguration);
-        Check.notNull(undoableCommand, "undoableCommand");
-        this.undoableCommand = undoableCommand;
+                             ChangeProvider changeProvider) {
+        this(id, commandConfiguration, true, changeProvider);
     }
 
     public DelegatingCommand(String id,
                              CommandConfiguration commandConfiguration,
-                             CommandQueue commandQueue,
-                             UndoableCommand<T> undoableCommand) {
-        super(id, commandConfiguration, commandQueue);
-        Check.notNull(undoableCommand, "undoableCommand");
-        this.undoableCommand = undoableCommand;
-    }
-
-    public DelegatingCommand(String id,
-                             CommandConfiguration commandConfiguration,
-                             CommandQueue commandQueue,
                              boolean enabled,
-                             UndoableCommand<T> undoableCommand) {
-        super(id, commandConfiguration, commandQueue, enabled);
-        Check.notNull(undoableCommand, "undoableCommand");
-        this.undoableCommand = undoableCommand;
+                             ChangeProvider changeProvider) {
+        super(id, commandConfiguration, enabled);
+        Check.notNull(changeProvider, "changeProvider");
+        this.changeProvider = changeProvider;
     }
 
-    @Override public T doCommand() {
-        return undoableCommand.doCommand();
+    @Override public Change createChange(Project project) {
+        return changeProvider.createChange(project);
     }
 
-    @Override public void undoCommand(T undoData) {
-        undoableCommand.undoCommand(undoData);
-    }
 }

@@ -1,5 +1,7 @@
 package org.uiflow.propertyeditor.commands;
 
+import org.uiflow.propertyeditor.model.project.Project;
+
 /**
  *
  */
@@ -23,9 +25,11 @@ public interface Command {
     CommandConfiguration getCommandConfiguration();
 
     /**
-     * Invokes the command.
+     * Invoke command.
+     *
+     * @param project active project to do the command on.
      */
-    void invoke();
+    void invoke(Project project);
 
     /**
      * @return true if this command is currently enabled (can be invoked).
@@ -41,10 +45,5 @@ public interface Command {
      * @param listener listener to remove.
      */
     void removeListener(CommandListener listener);
-
-    /**
-     * @return the command queue that this command uses to handle undo and redo of itself, or null if it does not use any command queue.
-     */
-    CommandQueue getQueue();
 
 }

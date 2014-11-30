@@ -2,6 +2,7 @@ package org.uiflow.propertyeditor.commands;
 
 import org.uiflow.UiContext;
 import org.uiflow.utils.Check;
+import org.uiflow.utils.HotKey;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -11,7 +12,6 @@ import java.util.List;
 /**
  * Provides common functionality for a CommandProvider.
  */
-// TODO: What about invocation?
 public abstract class CommandProviderBase implements CommandProvider {
 
     private final List<Command> commands = new ArrayList<Command>();
@@ -30,26 +30,9 @@ public abstract class CommandProviderBase implements CommandProvider {
         }
     };
 
-    private CommandQueue commandQueue;
-
-    private UiContext uiContext;
-
-    protected CommandProviderBase(UiContext uiContext) {
-        this(uiContext, null);
+    protected CommandProviderBase() {
     }
 
-    protected CommandProviderBase(UiContext uiContext, CommandQueue commandQueue) {
-        this.commandQueue = commandQueue;
-        this.uiContext = uiContext;
-    }
-
-    protected final CommandQueue getCommandQueue() {
-        return commandQueue;
-    }
-
-    protected final void setCommandQueue(CommandQueue commandQueue) {
-        this.commandQueue = commandQueue;
-    }
 
     @Override public final Collection<Command> getCommands() {
         return readOnlyCommands;
@@ -67,18 +50,17 @@ public abstract class CommandProviderBase implements CommandProvider {
         listeners.remove(listener);
     }
 
-    protected final <T> Command addCommand(String id, String name, String description, String iconId, int hotKey, String defaultPath1, String defaultPath2, UndoableCommand<T> undoableCommand) {
-        return addCommand(new DelegatingCommand<T>(id,
+    protected final Command addCommand(String id, String name, String description, String iconId, HotKey hotKey, String defaultPath1, String defaultPath2, ChangeProvider changeProvider) {
+        return addCommand(new DelegatingCommand(id,
                                                    new CommandConfigurationImpl(name,
                                                                                 description,
-                                                                                uiContext.getDrawable(iconId),
+                                                                                iconId,
                                                                                 hotKey,
                                                                                 defaultPath1, defaultPath2),
-                                                   commandQueue,
-                                                   undoableCommand));
+                                                   changeProvider));
     }
 
-    protected final Command addCommand(Command command) {
+    protected final <T extends Command> T addCommand(T command) {
         Check.notNull(command, "command");
 
         if (!commands.contains(command)) {

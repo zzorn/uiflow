@@ -1,9 +1,9 @@
 package org.uiflow.propertyeditor.commands;
 
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import org.uiflow.utils.HotKey;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -12,18 +12,18 @@ import java.util.List;
 public class CommandConfigurationImpl implements CommandConfiguration {
     private String name;
     private String description;
-    private Drawable icon;
-    private int hotKey;
+    private String iconId;
+    private HotKey hotKey;
     private List<String> menuPaths = new ArrayList<String>();
 
     public CommandConfigurationImpl(String name,
                                     String description,
-                                    Drawable icon,
-                                    int hotKey,
+                                    String iconId,
+                                    HotKey hotKey,
                                     String ... menuPaths) {
         this.name = name;
         this.description = description;
-        this.icon = icon;
+        this.iconId = iconId;
         this.hotKey = hotKey;
 
         for (String menuPath : menuPaths) {
@@ -47,20 +47,21 @@ public class CommandConfigurationImpl implements CommandConfiguration {
         this.description = description;
     }
 
-    public Drawable  getIcon() {
-        return icon;
+    public String getIconId() {
+        return iconId;
     }
 
-    public void setIcon(Drawable icon) {
-        this.icon = icon;
+    public void setIconId(String iconId) {
+        this.iconId = iconId;
     }
 
-    public int getHotKey() {
+    public HotKey getHotKey() {
         return hotKey;
     }
 
-    public void setHotKey(int hotKey) {
+    public HotKey setHotKey(HotKey hotKey) {
         this.hotKey = hotKey;
+        return hotKey;
     }
 
     public List<String> getMenuPaths() {

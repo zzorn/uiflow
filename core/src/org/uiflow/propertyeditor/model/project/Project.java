@@ -1,5 +1,7 @@
 package org.uiflow.propertyeditor.model.project;
 
+import org.uiflow.propertyeditor.commands.Change;
+
 /**
  * A project contains zero or more Beans, arranged in some hierarchy (perhaps also tagged, or named?).
  * It may also have a root bean with project specific settings.
@@ -28,4 +30,13 @@ package org.uiflow.propertyeditor.model.project;
  *
  */
 public interface Project {
+
+    /**
+     * Applies a change to the project.
+     * The change is stored in the undo-redo queue of the project.
+     *
+     * @param change change to apply to the project.
+     */
+    void applyChange(Change change);
+
 }
