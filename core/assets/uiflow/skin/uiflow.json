@@ -43,7 +43,8 @@ org.uiflow.widgets.FlowSlider$FlowSliderStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: { font: default-font, fontColor: lightgrey },
     highlight: { font: default-font, fontColor: white, background: halo },
-    window_title: { font: title-font, fontColor: amber, background: window_title }
+    window_title: { font: title-font, fontColor: amber, background: window_title },
+    window_title_selected: { font: title-font, fontColor: white, background: window_title_selected }
 },
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: { selection: selection, background: field, font: default-font, fontColor: amber, cursor: cursor },

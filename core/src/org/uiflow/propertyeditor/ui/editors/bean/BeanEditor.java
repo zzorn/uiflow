@@ -15,6 +15,10 @@ import java.util.*;
  */
 public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
+    private static final String BEAN_STYLE_SELECTED = "window_titled_selected";
+    private static final String BEAN_STYLE = "window_titled";
+    private static final String TITLE_STYLE = "window_title";
+    private static final String TITLE_STYLE_SELECTED = "window_title_selected";
     private final boolean showConnectors;
     private final boolean mirrorDirections;
     private final PropertyDirection directionsToShow;
@@ -53,7 +57,7 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
             notifyValueEditedInUi(bean);
         }
     };
-
+    private boolean selected;
 
 
     /**
@@ -161,11 +165,11 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
 
     @Override protected Actor createEditor(BeanEditorConfiguration configuration, UiContext uiContext) {
         beanTable = new Table(uiContext.getSkin());
-        beanTable.setBackground("window_titled");
+        //beanTable.setBackground(BEAN_STYLE);
 
         // Name label
         nameLabel = new Label("", uiContext.getSkin());
-        nameLabel.setStyle(uiContext.getSkin().get("window_title", Label.LabelStyle.class));
+        //nameLabel.setStyle(uiContext.getSkin().get(TITLE_STYLE, Label.LabelStyle.class));
         nameLabel.setAlignment(Align.center);
         beanTable.add(nameLabel).expandX().fillX();
         beanTable.row();
@@ -175,6 +179,8 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
         final float verticalPad = uiContext.getGap();
         propertyList = new Table(uiContext.getSkin());
         beanTable.add(propertyList).expand().fill().pad(verticalPad, horizontalPad, verticalPad, horizontalPad);
+
+        updateSelectionStyle();
 
         updateUi();
 
@@ -353,5 +359,29 @@ public class BeanEditor extends EditorBase<Bean, BeanEditorConfiguration> {
      */
     public PropertyUi getPropertyUi(Property property) {
         return propertyEditors.get(property);
+    }
+
+    /**
+     * @param selected Whether this bean editor is currently selected in a BeanGraph.
+     *                 Affects the appearance used for it.
+     */
+    public void setSelected(boolean selected) {
+        this.selected = selected;
+        updateSelectionStyle();
+    }
+
+    private void updateSelectionStyle() {
+        if (isUiCreated()) {
+            beanTable.setBackground(selected ? BEAN_STYLE_SELECTED : BEAN_STYLE);
+            nameLabel.setStyle(getUiContext().getSkin().get(selected ? TITLE_STYLE_SELECTED : TITLE_STYLE , Label.LabelStyle.class));
+        }
+    }
+
+    /**
+     * @return Whether this bean editor is currently selected in a BeanGraph.
+     *                 Affects the appearance used for it.
+     */
+    public boolean isSelected() {
+        return selected;
     }
 }

@@ -1,5 +1,6 @@
 package org.uiflow.propertyeditor.ui.editors.beangraph;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Array;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.bean.*;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
@@ -56,10 +58,11 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
     private static final int CONNECTION_DRAG_BUTTON = DRAG_BUTTON;
     private static final int PAN_BUTTON = Input.Buttons.RIGHT;
-    private static final int CANCEL_DRAG_BUTTON = PAN_BUTTON;
 
     private static final float MIN_ZOOM = 1f / 8f;
     private static final float MAX_ZOOM = 8f;
+    private static final int SELECTION_TOGGLE_KEY_1 = Input.Keys.CONTROL_LEFT;
+    private static final int SELECTION_TOGGLE_KEY_2 = Input.Keys.CONTROL_RIGHT;
 
     private Table workArea;
     private Table connectionLayer;
@@ -74,6 +77,8 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
     private float zoom = 1;
     private Vector2 viewPan = new Vector2(0.5f, 0);
+
+    private Array<Bean> selectedBeans = new Array<Bean>();
 
 
     private final BeanGraphListener graphListener = new BeanGraphListener() {
@@ -116,7 +121,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         }
     };
 
-    private final InputListener dragListener = new InputListener() {
+    private final InputListener dragAndSelectionListener = new InputListener() {
 
         private final Vector2 tempPos = new Vector2();
 
@@ -132,11 +137,35 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
                         dragOffset.set(beanContainer.getCenterX() - x,
                                        beanContainer.getCenterY() - y);
                         setBeanPos(x, y);
+
+                        // Handle selection
+                        if (isSelectionToggleActive()) {
+                            // Toggle selection
+                            setBeanSelected(bean, !isSelected(bean));
+                        }
+                        else {
+                            // Select only this
+                            clearSelection();
+                            setBeanSelected(bean, true);
+                        }
+
                         return true;
                     }
                 }
+
+                // Unselect all if background is clicked
+                if (event.getTarget() == workArea && hasSelection() && !isSelectionToggleActive()) {
+                    clearSelection();
+                }
             }
+
+
             return false;
+        }
+
+        private boolean isSelectionToggleActive() {
+            return Gdx.input.isKeyPressed(SELECTION_TOGGLE_KEY_1) ||
+                Gdx.input.isKeyPressed(SELECTION_TOGGLE_KEY_2);
         }
 
         @Override public void touchDragged(InputEvent event, float x, float y, int pointer) {
@@ -163,6 +192,57 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         }
 
     };
+
+    /**
+     * Change selection status of the specified bean. Doesn't affect other beans.
+     */
+    public void setBeanSelected(Bean bean, boolean selected) {
+        // Check if we already were selected
+        boolean wasSelected = selectedBeans.contains(bean, true);
+        if (wasSelected != selected) {
+            // Update selected beans
+            if (selected) {
+                selectedBeans.add(bean);
+            }
+            else {
+                selectedBeans.removeValue(bean, true);
+            }
+
+            // Update ui
+            updateBeanSelectionInUi(bean, selected);
+        }
+    }
+
+    /**
+     * Mark all selected beans as unselected.
+     */
+    public void clearSelection() {
+        for (Bean selectedBean : selectedBeans) {
+            updateBeanSelectionInUi(selectedBean, false);
+        }
+        selectedBeans.clear();
+    }
+
+    /**
+     * @return true if the specified bean is selected.
+     */
+    public boolean isSelected(Bean bean) {
+        return selectedBeans.contains(bean, true);
+    }
+
+    /**
+     * @return true if one or more beans are selected.
+     */
+    public boolean hasSelection() {
+        return selectedBeans.size > 0;
+    }
+
+    private void updateBeanSelectionInUi(Bean bean, boolean selected) {
+        final BeanEditor beanEditor = beanEditors.get(bean);
+        if (beanEditor != null) {
+            beanEditor.setSelected(selected);
+        }
+    }
 
     public BeanGraphEditor() {
         this(new BeanGraphConfiguration());
@@ -205,7 +285,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         table.add(workArea).fill().expand();
 
         // Listen to moves
-        workArea.addListener(dragListener);
+        workArea.addListener(dragAndSelectionListener);
 
         // Listen to connectors
         connectionLayer.addListener(createConnectionListener());
