@@ -79,7 +79,8 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private float zoom = 1;
     private Vector2 viewPan = new Vector2(0.5f, 0);
 
-    private Array<Bean> selectedBeans = new Array<Bean>();
+    private final Array<Bean> selectedBeans = new Array<Bean>();
+    private final Array<GraphSelectionListener> selectionListeners = new Array<GraphSelectionListener>();
 
 
     private final BeanGraphListener graphListener = new BeanGraphListener() {
@@ -211,6 +212,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
             // Update ui
             updateBeanSelectionInUi(bean, selected);
+
+            // Notify listeners
+            notifySelectionChanged(bean, selected);
         }
     }
 
@@ -220,6 +224,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     public void clearSelection() {
         for (Bean selectedBean : selectedBeans) {
             updateBeanSelectionInUi(selectedBean, false);
+            notifySelectionChanged(selectedBean, false);
         }
         selectedBeans.clear();
     }
@@ -236,6 +241,31 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
      */
     public boolean hasSelection() {
         return selectedBeans.size > 0;
+    }
+
+    /**
+     * @param listener listener to notify about selection changes.
+     */
+    public void addSelectionListener(GraphSelectionListener listener) {
+        Check.notNull(listener, "listener");
+        if (!selectionListeners.contains(listener, true)) {
+            selectionListeners.add(listener);
+        }
+    }
+
+    /**
+     * @param listener to remove
+     */
+    public void removeSelectionListener(GraphSelectionListener listener) {
+        if (listener != null) {
+            selectionListeners.removeValue(listener, true);
+        }
+    }
+
+    private void notifySelectionChanged(Bean bean, boolean selected) {
+        for (GraphSelectionListener selectionListener : selectionListeners) {
+            selectionListener.onSelectionChanged(this, bean, selected);
+        }
     }
 
     private void updateBeanSelectionInUi(Bean bean, boolean selected) {
