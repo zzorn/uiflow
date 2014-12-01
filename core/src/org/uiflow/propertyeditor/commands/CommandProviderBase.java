@@ -19,6 +19,28 @@ public abstract class CommandProviderBase implements CommandProvider {
 
     private final List<CommandProviderListener> listeners = new ArrayList<CommandProviderListener>();
 
+    private final List<CommandProvider> delegateCommandProviders = new ArrayList<CommandProvider>();
+
+    private final CommandProviderListener delegateCommandProviderListener = new CommandProviderListener() {
+        @Override public void commandAdded(CommandProvider commandProvider, Command command) {
+            notifyCommandAdded(command);
+        }
+
+        @Override public void commandRemoved(CommandProvider commandProvider, Command command) {
+            notifyCommandRemoved(command);
+        }
+
+        @Override public void commandEnabledChanged(CommandProvider commandProvider, Command command, boolean enabled) {
+            notifyCommandEnabledChanged(command, enabled);
+        }
+
+        @Override public void commandConfigChanged(CommandProvider commandProvider,
+                                                   Command command,
+                                                   CommandConfiguration commandConfiguration) {
+            notifyCommandConfigChanged(command, commandConfiguration);
+        }
+    };
+
     private final CommandListener commandListener = new CommandListener() {
         @Override public void onCommandEnableChanged(Command command, boolean enabled) {
             notifyCommandEnabledChanged(command, enabled);
@@ -82,6 +104,21 @@ public abstract class CommandProviderBase implements CommandProvider {
         }
     }
 
+    protected final void addCommandProvider(CommandProvider commandProvider) {
+        Check.notNull(commandProvider, "commandProvider");
+        if (!delegateCommandProviders.contains(commandProvider)) {
+            delegateCommandProviders.add(commandProvider);
+            commandProvider.addCommandListener(delegateCommandProviderListener);
+        }
+    }
+
+    protected final void removeCommandProvider(CommandProvider commandProvider) {
+        Check.notNull(commandProvider, "commandProvider");
+        if (delegateCommandProviders.contains(commandProvider)) {
+            delegateCommandProviders.remove(commandProvider);
+            commandProvider.removeCommandListener(delegateCommandProviderListener);
+        }
+    }
 
     private void notifyCommandAdded(Command command) {
         for (CommandProviderListener listener : listeners) {

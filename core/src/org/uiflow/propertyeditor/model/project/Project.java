@@ -1,6 +1,10 @@
 package org.uiflow.propertyeditor.model.project;
 
 import org.uiflow.propertyeditor.commands.Change;
+import org.uiflow.propertyeditor.commands.CommandProvider;
+import org.uiflow.propertyeditor.model.bean.Bean;
+
+import java.util.List;
 
 /**
  * A project contains zero or more Beans, arranged in some hierarchy (perhaps also tagged, or named?).
@@ -29,7 +33,15 @@ import org.uiflow.propertyeditor.commands.Change;
  *
  *
  */
-public interface Project {
+public interface Project extends CommandProvider {
+
+    List<Bean> getBeans();
+
+    void addBean(Bean bean);
+
+    void removeBean(Bean bean);
+
+
 
     /**
      * Applies a change to the project.
