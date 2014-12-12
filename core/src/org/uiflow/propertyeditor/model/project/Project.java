@@ -1,8 +1,8 @@
 package org.uiflow.propertyeditor.model.project;
 
-import org.uiflow.propertyeditor.commands.Change;
 import org.uiflow.propertyeditor.commands.CommandProvider;
 import org.uiflow.propertyeditor.model.bean.Bean;
+import org.uiflow.propertyeditor.model.category.Category;
 
 import java.util.List;
 
@@ -35,20 +35,7 @@ import java.util.List;
  */
 public interface Project extends CommandProvider {
 
-    List<Bean> getBeans();
+    Category getRootCategory();
 
-    void addBean(Bean bean);
-
-    void removeBean(Bean bean);
-
-
-
-    /**
-     * Applies a change to the project.
-     * The change is stored in the undo-redo queue of the project.
-     *
-     * @param change change to apply to the project.
-     */
-    void applyChange(Change change);
 
 }

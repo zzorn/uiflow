@@ -1,18 +1,15 @@
 package org.uiflow.propertyeditor.commands;
 
 import org.uiflow.propertyeditor.model.project.Project;
+import org.uiflow.utils.HotKey;
+
+import java.util.List;
 
 /**
  *
  */
-// TODO: Need to think through the case of commands with parameter state
-// TODO: Commands cause changes.  Changes have state, commands not..
-// TODO: So command could produce a change object, that then gets applied or unapplied to a model
-// TODO: Unapplying a change packet is usually quite challenging thou.  But doable, as we only have to worry about beans, properties and beangraphs.  Bean instance type needs to be handled (type needs to have a no-arg constructor).  Custom bean state may be supported with an optional get/set extra state command (also used for serialization).
-// TODO: We may need unique ids for beans, beangraphs, properties, etc - but we might also be able to use the path from the project root to refer to them (as long as we can always get the parent/host of an object - so we'll need to re-add property graph / project fields to beans).
-
 // TODO: Create icon object that takes one drawable and creates disabled, hovered, and pressed versions from it.
-public interface Command {
+public interface Command extends Invokable {
 
     /**
      * @return unique id for this command.  Used for configuration, internationalization, etc.
@@ -20,16 +17,32 @@ public interface Command {
     String getId();
 
     /**
-     * @return default configuration for this command, including name, description, icon, hotkey, and menu location(s).
+     * @return user readable short name.
      */
-    CommandConfiguration getCommandConfiguration();
+    String getName();
 
     /**
-     * Invoke command.
-     *
-     * @param project active project to do the command on.
+     * @return user readable description.
      */
-    void invoke(Project project);
+    String getDescription();
+
+    /**
+     * @return id of icon for this command, or null for none.
+     */
+    String getIconId();
+
+
+    /**
+     * @return hotkey to activate this command, or 0 if none.
+     */
+    HotKey getHotKey();
+
+    /**
+     * @return locations in menu structures.
+     *         Denotes a path from a main menu to sub menu to section in menu (use "" as the default section in a menu.).
+     *         Different menus/toolbars have different root names.
+     */
+    List<String> getMenuPaths();
 
     /**
      * @return true if this command is currently enabled (can be invoked).

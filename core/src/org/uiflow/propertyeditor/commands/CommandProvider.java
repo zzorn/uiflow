@@ -5,7 +5,6 @@ import java.util.Collection;
 /**
  *
  */
-// TODO: Should it have a command queue or be provided one?  Implementation specific detail maybe, add to CommandProviderBase.
 public interface CommandProvider {
 
     /**

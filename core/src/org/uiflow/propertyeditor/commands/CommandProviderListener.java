@@ -11,6 +11,6 @@ public interface CommandProviderListener {
 
     void commandEnabledChanged(CommandProvider commandProvider, Command command, boolean enabled);
 
-    void commandConfigChanged(CommandProvider commandProvider, Command command, CommandConfiguration commandConfiguration);
+    void commandConfigChanged(CommandProvider commandProvider, Command command);
 
 }

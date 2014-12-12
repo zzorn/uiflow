@@ -1,6 +1,7 @@
 package org.uiflow.propertyeditor.model.project;
 
 import org.uiflow.propertyeditor.commands.*;
+import org.uiflow.propertyeditor.model.category.Category;
 
 import java.util.Collection;
 
@@ -9,15 +10,16 @@ import java.util.Collection;
  */
 public class DefaultProject extends CommandProviderBase implements Project {
 
-    private final CommandQueue commandQueue;
+    private Category rootCategory;
 
     public DefaultProject() {
-        commandQueue = new CommandQueue(this);
-        addCommandProvider(commandQueue);
     }
 
-    @Override public final void applyChange(Change change) {
-        commandQueue.applyChange(change);
+    public Category getRootCategory() {
+        return rootCategory;
     }
 
+    public void setRootCategory(Category rootCategory) {
+        this.rootCategory = rootCategory;
+    }
 }

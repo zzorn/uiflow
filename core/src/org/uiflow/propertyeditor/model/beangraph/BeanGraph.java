@@ -1,6 +1,7 @@
 package org.uiflow.propertyeditor.model.beangraph;
 
 import com.badlogic.gdx.math.Vector2;
+import org.uiflow.propertyeditor.model.BeanContainer;
 import org.uiflow.propertyeditor.model.bean.Bean;
 import org.uiflow.propertyeditor.model.bean.BeanDelegate;
 import org.uiflow.propertyeditor.model.bean.MutableBean;
@@ -13,7 +14,7 @@ import java.util.Map;
  * A number of connected beans, providing some common input and output properties.
  */
 // NOTE: Could also be called BeanModule, BeanGroup, BeanCollection, or similar.
-public interface BeanGraph extends Bean {
+public interface BeanGraph extends Bean, BeanContainer<BeanGraphListener> {
 
     /**
      * @param bean bean to add to the graph.
@@ -81,12 +82,12 @@ public interface BeanGraph extends Bean {
      * @param listener listener to add to the BeanGraph.
      *                 Will be notified of beans added and removed to/from the BeanGraph, and beans moved in the BeanGraph.
      */
-    void addGraphListener(BeanGraphListener listener);
+    void addListener(BeanGraphListener listener);
 
     /**
      * @param listener listener to remove from the BeanGraph.
      */
-    void removeGraphListener(BeanGraphListener listener);
+    void removeListener(BeanGraphListener listener);
 
     /**
      * @return a bean containing the input and output properties of this BeanGraph, functioning as an interface to this BeanGraph.

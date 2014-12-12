@@ -1,32 +1,50 @@
 package org.uiflow.propertyeditor.commands;
 
-import org.uiflow.propertyeditor.model.project.Project;
-import org.uiflow.utils.Check;
+import org.uiflow.utils.HotKey;
 
 /**
- * Delegates change creation
+ *
  */
 public final class DelegatingCommand extends CommandBase {
 
-    private final ChangeProvider changeProvider;
+    private Invokable implementation;
 
+    /**
+     * @param id unique id for this command
+     * @param name user readable name of the command.
+     * @param description user readable description / tooltip for the command.
+     * @param iconId id used to look up the icon for the command.
+     * @param hotKey hotkey to use for the command, none if null.
+     * @param enabled true if the command can be invoked at the moment, false if not.
+     * @param implementation code to run when the command is onvoked.
+     * @param menuPaths places in menus and toolbars that the command should be put in,
+     *                  a path with the name of the menu and submenu names and menu section, separated by periods.
+     *                  E.g. MainMenu.File.3_export or MainToolbar.2_edit
+     */
     public DelegatingCommand(String id,
-                             CommandConfiguration commandConfiguration,
-                             ChangeProvider changeProvider) {
-        this(id, commandConfiguration, true, changeProvider);
-    }
-
-    public DelegatingCommand(String id,
-                             CommandConfiguration commandConfiguration,
+                             String name,
+                             String description,
+                             String iconId,
+                             HotKey hotKey,
                              boolean enabled,
-                             ChangeProvider changeProvider) {
-        super(id, commandConfiguration, enabled);
-        Check.notNull(changeProvider, "changeProvider");
-        this.changeProvider = changeProvider;
+                             Invokable implementation,
+                             String... menuPaths) {
+        super(id, name, description, iconId, hotKey, enabled, menuPaths);
+
+        this.implementation = implementation;
     }
 
-    @Override public Change createChange(Project project) {
-        return changeProvider.createChange(project);
+    @Override public void invoke(Object target) {
+        if (implementation != null) {
+            implementation.invoke(target);
+        }
     }
 
+    public Invokable getImplementation() {
+        return implementation;
+    }
+
+    public void setImplementation(Invokable implementation) {
+        this.implementation = implementation;
+    }
 }

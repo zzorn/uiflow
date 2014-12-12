@@ -33,7 +33,11 @@ public class DefaultBeanGraph implements BeanGraph {
         internalInputBean = new NamedPostfixBeanDelegate(interfaceBean, " Inputs");
         internalOutputBean = new NamedPostfixBeanDelegate(interfaceBean, " Outputs");
         addBean(internalOutputBean, -0.5f, 0);
-        addBean(internalInputBean,  0.5f, 0);
+        addBean(internalInputBean, 0.5f, 0);
+    }
+
+    @Override public final Bean addBean(Bean bean) {
+        return addBean(bean, 0, 0);
     }
 
     @Override public final Bean addBean(Bean bean, Vector2 position) {
@@ -122,12 +126,12 @@ public class DefaultBeanGraph implements BeanGraph {
         return beansAndPositions.containsKey(bean);
     }
 
-    @Override public final void addGraphListener(BeanGraphListener listener) {
+    @Override public final void addListener(BeanGraphListener listener) {
         Check.notNull(listener, "listener");
         listeners.add(listener);
     }
 
-    @Override public final void removeGraphListener(BeanGraphListener listener) {
+    @Override public final void removeListener(BeanGraphListener listener) {
         listeners.remove(listener);
     }
 

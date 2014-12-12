@@ -7,6 +7,6 @@ public interface CommandListener {
 
     void onCommandEnableChanged(Command command, boolean enabled);
 
-    void onCommandConfigurationChanged(Command command, CommandConfiguration commandConfiguration);
+    void onCommandConfigurationChanged(Command command);
 
 }

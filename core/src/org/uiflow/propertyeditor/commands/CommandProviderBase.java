@@ -35,9 +35,8 @@ public abstract class CommandProviderBase implements CommandProvider {
         }
 
         @Override public void commandConfigChanged(CommandProvider commandProvider,
-                                                   Command command,
-                                                   CommandConfiguration commandConfiguration) {
-            notifyCommandConfigChanged(command, commandConfiguration);
+                                                   Command command) {
+            notifyCommandConfigChanged(command);
         }
     };
 
@@ -46,9 +45,8 @@ public abstract class CommandProviderBase implements CommandProvider {
             notifyCommandEnabledChanged(command, enabled);
         }
 
-        @Override public void onCommandConfigurationChanged(Command command,
-                                                            CommandConfiguration commandConfiguration) {
-            notifyCommandConfigChanged(command, commandConfiguration);
+        @Override public void onCommandConfigurationChanged(Command command) {
+            notifyCommandConfigChanged(command);
         }
     };
 
@@ -72,14 +70,15 @@ public abstract class CommandProviderBase implements CommandProvider {
         listeners.remove(listener);
     }
 
-    protected final Command addCommand(String id, String name, String description, String iconId, HotKey hotKey, String defaultPath1, String defaultPath2, ChangeProvider changeProvider) {
+    protected final Command addCommand(String id, String name, String description, String iconId, HotKey hotKey, String defaultPath1, String defaultPath2, Invokable implementation) {
         return addCommand(new DelegatingCommand(id,
-                                                   new CommandConfigurationImpl(name,
-                                                                                description,
-                                                                                iconId,
-                                                                                hotKey,
-                                                                                defaultPath1, defaultPath2),
-                                                   changeProvider));
+                                                name,
+                                                description,
+                                                iconId,
+                                                hotKey,
+                                                true,
+                                                implementation,
+                                                defaultPath1, defaultPath2));
     }
 
     protected final <T extends Command> T addCommand(T command) {
@@ -138,9 +137,9 @@ public abstract class CommandProviderBase implements CommandProvider {
         }
     }
 
-    private void notifyCommandConfigChanged(Command command, CommandConfiguration commandConfiguration) {
+    private void notifyCommandConfigChanged(Command command) {
         for (CommandProviderListener listener : listeners) {
-            listener.commandConfigChanged(this, command, commandConfiguration);
+            listener.commandConfigChanged(this, command);
         }
     }
 

@@ -598,7 +598,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
     @Override protected void onValueChanged(BeanGraph oldValue, BeanGraph newValue) {
         if (oldValue != null) {
-            oldValue.removeGraphListener(graphListener);
+            oldValue.removeListener(graphListener);
         }
 
         if (isUiCreated()) {
@@ -606,7 +606,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         }
 
         if (newValue != null) {
-            newValue.addGraphListener(graphListener);
+            newValue.addListener(graphListener);
         }
     }
 
