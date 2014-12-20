@@ -9,8 +9,8 @@ import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
  */
 public interface BeanContainerListener {
 
-    void onBeanAdded(BeanGraph beanGraph, Bean bean, Vector2 position);
+    void onBeanAdded(BeanContainer beanContainer, Bean bean, Vector2 position);
 
-    void onBeanRemoved(BeanGraph beanGraph, Bean bean, Vector2 position);
+    void onBeanRemoved(BeanContainer beanContainer, Bean bean, Vector2 position);
 
 }

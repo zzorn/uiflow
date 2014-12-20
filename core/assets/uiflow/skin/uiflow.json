@@ -51,4 +51,8 @@ com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	error: { selection: selection, background: field_error, font: default-font, fontColor: white, cursor: cursor },
 	disabled: { selection: selection, background: field, font: default-font, fontColor: lightgrey, cursor: cursor }
 },
+com.badlogic.gdx.scenes.scene2d.ui.Tree$TreeStyle: {
+	default: { minus: button_pressed, plus: button_up, selection: selection }
+}
+
 }

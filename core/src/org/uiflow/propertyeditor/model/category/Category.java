@@ -9,6 +9,8 @@ import java.util.List;
  */
 public interface Category extends BeanContainer<CategoryListener> {
 
+    Category getParentCategory();
+
     String getName();
 
     String getDescription();
@@ -20,4 +22,7 @@ public interface Category extends BeanContainer<CategoryListener> {
     void addSubcategory(Category category);
 
     void removeSubcategory(Category category);
+
+    void setParentCategory(Category parentCategory);
+
 }

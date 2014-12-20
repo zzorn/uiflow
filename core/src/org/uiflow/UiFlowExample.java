@@ -3,8 +3,10 @@ package org.uiflow;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import org.uiflow.propertyeditor.model.bean.Bean;
 import org.uiflow.propertyeditor.model.bean.BeanListener;
 import org.uiflow.propertyeditor.model.bean.Property;
@@ -13,9 +15,12 @@ import org.uiflow.propertyeditor.model.bean.dynamic.DynamicBean;
 import org.uiflow.propertyeditor.model.bean.dynamic.DynamicProperty;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
 import org.uiflow.propertyeditor.model.beangraph.DefaultBeanGraph;
+import org.uiflow.propertyeditor.model.category.Category;
+import org.uiflow.propertyeditor.model.category.DefaultCategory;
 import org.uiflow.propertyeditor.ui.editors.bean.LabelLocation;
 import org.uiflow.propertyeditor.ui.editors.beangraph.BeanGraphConfiguration;
 import org.uiflow.propertyeditor.ui.editors.beangraph.BeanGraphEditor;
+import org.uiflow.propertyeditor.ui.editors.category.CategoryEditor;
 import org.uiflow.propertyeditor.ui.editors.number.NumberEditorConfiguration;
 import org.uiflow.utils.colorfunction.ColorGradient;
 
@@ -61,6 +66,29 @@ public class UiFlowExample extends ApplicationAdapter {
         testBean.addListener(createDebugPrintListener());
         */
 
+        // Category view
+        final Category libraryRoot = new DefaultCategory("Gnomoids",
+                                                   new DefaultCategory("Gnomes"),
+                                                   new DefaultCategory("Hobbitses",
+                                                                       new DynamicBean("Foolish Hobbit"),
+                                                                       new DynamicBean("Finger Food")),
+                                                   new DefaultCategory("Trolls",
+                                                                       new DynamicBean("Igor"),
+                                                                       new DynamicBean("Hobbit Eater")
+                                                   ));
+        CategoryEditor library = new CategoryEditor();
+        library.setValue(libraryRoot);
+
+        TextButton gnomoidButton = new TextButton("Create Gnomoid", uiContext.getSkin());
+        gnomoidButton.addListener(new ClickListener(){
+            @Override public void clicked(InputEvent event, float x, float y) {
+                libraryRoot.addSubcategory(new DefaultCategory("New Random Gnome Race"));
+            }
+        });
+        rootTable.add(gnomoidButton).row();
+
+        rootTable.add(library.getUi(uiContext)).fill().expandY();
+
         // Test bean graph
         BeanGraph beanGraph = new DefaultBeanGraph("Test Graph");
 //        beanGraph.addBean(createTestBean(), 40, 40);
@@ -80,6 +108,7 @@ public class UiFlowExample extends ApplicationAdapter {
         beanB.getProperty("Inventory Slots").setSource(beanA.getProperty("Inventory Slots"));
         beanA.getProperty("Favourite Foods").setSource(beanB.getProperty("Name"));
         result.set(beanB.getProperty("Balance2"));
+
 
 	}
 

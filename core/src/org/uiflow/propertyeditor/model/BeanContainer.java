@@ -7,7 +7,7 @@ import java.util.Collection;
 /**
  * Something that contains zero or more Beans.
  */
-public interface BeanContainer<L extends BeanContainerListener> {
+public interface BeanContainer<L> {
 
     Collection<Bean> getBeans();
 
