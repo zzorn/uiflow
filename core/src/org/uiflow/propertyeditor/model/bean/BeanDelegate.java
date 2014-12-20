@@ -43,4 +43,9 @@ public class BeanDelegate implements Bean {
     public Bean getDelegate() {
         return delegate;
     }
+
+    @Override
+    public Bean createCopy() {
+        return delegate.createCopy();
+    }
 }

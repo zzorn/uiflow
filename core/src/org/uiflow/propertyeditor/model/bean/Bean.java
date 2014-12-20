@@ -1,7 +1,5 @@
 package org.uiflow.propertyeditor.model.bean;
 
-import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
-
 import java.util.List;
 
 /**
@@ -33,4 +31,8 @@ public interface Bean {
      * The first property with the specified name, or null if not found.
      */
     Property getProperty(String propertyName);
+
+    Bean createCopy();
+
+//    Bean createReference();
 }

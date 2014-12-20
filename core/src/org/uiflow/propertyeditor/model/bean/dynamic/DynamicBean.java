@@ -757,4 +757,21 @@ public class DynamicBean extends BeanBase implements MutableBean {
     @Override public String toString() {
         return getName();
     }
+
+    @Override
+    protected Bean createCopiedInstance() {
+        // Create empty copy
+        DynamicBean copy = new DynamicBean(getName());
+
+        // Copy properties
+        for (Property property : properties) {
+            copy.addProperty(property.getName(),
+                             property.getType(),
+                             property.get(),
+                             property.getEditorConfiguration(),
+                             property.getDirection());
+        }
+
+        return copy;
+    }
 }

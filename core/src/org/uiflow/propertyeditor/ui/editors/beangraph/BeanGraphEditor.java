@@ -14,6 +14,7 @@ import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.bean.*;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraph;
 import org.uiflow.propertyeditor.model.beangraph.BeanGraphListener;
+import org.uiflow.propertyeditor.ui.DefaultBeanDropTarget;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 import org.uiflow.propertyeditor.ui.editors.bean.BeanEditor;
 import org.uiflow.propertyeditor.ui.editors.bean.ConnectorButton;
@@ -302,6 +303,8 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
             }
         };
         workArea.setClip(true);
+
+        updateDropHandler(getValue());
 
         // Receive mouse events for whole area, not just children
         workArea.setTouchable(Touchable.enabled);
@@ -596,7 +599,7 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
         return (T) actor;
     }
 
-    @Override protected void onValueChanged(BeanGraph oldValue, BeanGraph newValue) {
+    @Override protected void onValueChanged(BeanGraph oldValue, final BeanGraph newValue) {
         if (oldValue != null) {
             oldValue.removeListener(graphListener);
         }
@@ -607,6 +610,23 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
         if (newValue != null) {
             newValue.addListener(graphListener);
+
+            updateDropHandler(newValue);
+        }
+    }
+
+    private void updateDropHandler(final BeanGraph beanGraph) {
+        // Handle dropped beans
+        if (isUiCreated() && beanGraph != null) {
+            workArea.setUserObject(new DefaultBeanDropTarget(beanGraph, true) {
+                private Vector2 tempDropPos = new Vector2();
+
+                @Override
+                protected void addBean(final Bean bean, final float x, final float y) {
+                    tempDropPos.set(x, y);
+                    beanGraph.addBean(bean, workAreaToGraphCoordinates(tempDropPos));
+                }
+            });
         }
     }
 
@@ -674,7 +694,11 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
 
         if (isUiCreated()) {
             // Create editor
-            BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT, true, mirrorDirections, directionToShow, getConfiguration().isHideEditorWhenSourceUsed());
+            BeanEditor beanEditor = new BeanEditor(LabelLocation.LEFT,
+                                                   true,
+                                                   mirrorDirections,
+                                                   directionToShow,
+                                                   getConfiguration().isHideEditorWhenSourceUsed());
             beanEditor.setValue(bean);
             beanEditors.put(bean, beanEditor);
 
@@ -860,9 +884,9 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     public Vector2 graphToWorkAreaCoordinates(Vector2 graphCoordinates) {
         float scale = 0.5f * Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
         graphCoordinates.mulAdd(viewPan, 1)
-                        .scl(zoom)
-                        .scl(scale)
-                        .add(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f);
+                .scl(zoom)
+                .scl(scale)
+                .add(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f);
         return graphCoordinates;
     }
 
@@ -873,23 +897,23 @@ public class BeanGraphEditor extends EditorBase<BeanGraph, BeanGraphConfiguratio
     private Vector2 workAreaToGraphCoordinates(Vector2 workAreaCoordinates, Vector2 panning) {
         float scale = 0.5f * Math.max(1, Math.min(workArea.getWidth(), workArea.getHeight()));
         workAreaCoordinates.sub(workArea.getWidth() * 0.5f, workArea.getHeight() * 0.5f)
-                           .scl(1f / scale)
-                           .scl(1f / zoom)
-                           .mulAdd(panning, -1);
+                .scl(1f / scale)
+                .scl(1f / zoom)
+                .mulAdd(panning, -1);
 
         return workAreaCoordinates;
     }
 
 
-    @Override protected void updateValueInUi(BeanGraph value) {
-        // Nothing to do here
+    @Override
+    protected void updateValueInUi(BeanGraph value) {
     }
 
-    @Override protected void setDisabled(boolean disabled) {
+    @Override
+    protected void setDisabled(boolean disabled) {
         // TODO: Implement
 
     }
-
 
 
 }

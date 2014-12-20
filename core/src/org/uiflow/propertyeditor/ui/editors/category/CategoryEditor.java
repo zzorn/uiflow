@@ -1,18 +1,22 @@
 package org.uiflow.propertyeditor.ui.editors.category;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Tree;
+import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import org.uiflow.UiContext;
 import org.uiflow.propertyeditor.model.bean.Bean;
 import org.uiflow.propertyeditor.model.category.Category;
 import org.uiflow.propertyeditor.model.category.CategoryListener;
+import org.uiflow.propertyeditor.ui.BeanDropTarget;
+import org.uiflow.propertyeditor.ui.DefaultBeanDropTarget;
 import org.uiflow.propertyeditor.ui.editors.EditorBase;
 
 /**
  *
  */
-public class CategoryEditor extends EditorBase<Category, CategoryEditorConfiguration> {
+public class CategoryEditor extends EditorBase<Category, CategoryEditorConfiguration>  {
 
     private Tree treeRoot;
 
@@ -44,6 +48,7 @@ public class CategoryEditor extends EditorBase<Category, CategoryEditorConfigura
 
     @Override protected Actor createEditor(CategoryEditorConfiguration configuration, UiContext uiContext) {
         treeRoot = new Tree(uiContext.getSkin());
+        treeRoot.setUserObject(this);
 
         return treeRoot;
     }
@@ -62,13 +67,16 @@ public class CategoryEditor extends EditorBase<Category, CategoryEditorConfigura
         }
     }
 
-    private Tree.Node createCategoryNode(Category category) {
+    private Tree.Node createCategoryNode(final Category category) {
         Label categoryLabel = new Label(category.getName(), getUiContext().getSkin());
 
         // Create node
         Tree.Node node = new Tree.Node(categoryLabel);
         node.setObject(category);
         node.setSelectable(true);
+
+        // Listen to dropped beans
+        categoryLabel.setUserObject(new DefaultBeanDropTarget(category));
 
         // Add subcategories
         for (Category subCategory : category.getSubcategories()) {
@@ -83,8 +91,22 @@ public class CategoryEditor extends EditorBase<Category, CategoryEditorConfigura
         return node;
     }
 
-    private Tree.Node createBeanNode(Bean bean) {
-        Label beanLabel = new Label(bean.getName(), getUiContext().getSkin());
+    private Tree.Node createBeanNode(final Bean bean) {
+        final Label beanLabel = new Label(bean.getName(), getUiContext().getSkin());
+
+        // Listen to drags
+        beanLabel.addListener(new DragListener() {
+            @Override
+            public void dragStop(final InputEvent event, final float x, final float y, final int pointer) {
+                final Actor actor = getChildAt(beanLabel, event, true);
+                final Object userObject = actor.getUserObject();
+                if (userObject != null && userObject instanceof BeanDropTarget) {
+                    BeanDropTarget beanDropTarget = (BeanDropTarget) userObject;
+                    beanDropTarget.handleBeanDrop(bean, null, actor, x, y);
+                }
+            }
+        });
+
 
         Tree.Node node = new Tree.Node(beanLabel);
         node.setObject(bean);
@@ -175,6 +197,19 @@ public class CategoryEditor extends EditorBase<Category, CategoryEditorConfigura
             // Parent node not found
             return false;
         }
+    }
+
+
+
+    private Actor getChildAt(final Actor widget, InputEvent event, final boolean touchableOnly) {
+        Actor actor = event.getStage().hit(event.getStageX(), event.getStageY(), touchableOnly);
+
+        // Find parent actor that is within the work area
+        while (actor != null && actor.getParent() != null && actor.getParent() != widget) {
+            actor = actor.getParent();
+        }
+
+        return actor;
     }
 
 

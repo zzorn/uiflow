@@ -6,6 +6,7 @@ import org.uiflow.propertyeditor.model.bean.dynamic.DynamicBean;
 import org.uiflow.utils.Check;
 
 import java.util.*;
+import java.util.Map.Entry;
 
 /**
  * Default implementation of BeanGraph.  Can be extended if desired.
@@ -221,4 +222,51 @@ public class DefaultBeanGraph implements BeanGraph {
     }
 
 
+    @Override
+    public Bean createCopy() {
+        // Create a copy with any references intact
+
+        DefaultBeanGraph copy = new DefaultBeanGraph(getName());
+
+        // Copy interface properties
+        for (Property property : interfaceBean.getProperties()) {
+            Object value = property.get();
+            if (value instanceof Bean) value = ((Bean)value).createCopy();
+            copy.interfaceBean.addProperty(property.getName(),
+                                           property.getType(),
+                                           value,
+                                           property.getEditorConfiguration(),
+                                           property.getDirection());
+        }
+
+        Map<Bean, Bean> sourceToCopy = new HashMap<Bean, Bean>();
+
+        sourceToCopy.put(interfaceBean, copy.interfaceBean);
+
+        // Copy nodes
+        for (Entry<Bean, Vector2> entry : beansAndPositions.entrySet()) {
+            final Bean bean = entry.getKey();
+            final Vector2 pos = entry.getValue();
+
+            final Bean beanCopy = bean.createCopy();
+            copy.addBean(beanCopy, pos);
+
+            sourceToCopy.put(bean, beanCopy);
+        }
+
+        // Fix references
+        for (Bean bean : beansAndPositions.keySet()) {
+            for (Property property : bean.getProperties()) {
+                final Property source = property.getSource();
+                if (source != null) {
+                    final Property sourcePropertyCopy = sourceToCopy.get(source.getBean()).getProperty(source.getName());
+                    sourceToCopy.get(bean).getProperty(property.getName()).setSource(sourcePropertyCopy);
+                }
+            }
+        }
+
+        sourceToCopy.clear();
+
+        return copy;
+    }
 }

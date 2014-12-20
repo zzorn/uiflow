@@ -2,9 +2,6 @@ package org.uiflow.propertyeditor.model.bean;
 
 import com.badlogic.gdx.utils.Array;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 /**
  * Base functionality for Bean implementations.
  */
@@ -81,4 +78,26 @@ public abstract class BeanBase implements Bean {
             listener.onPropertyRemoved(this, property);
         }
     }
+
+    @Override
+    public Bean createCopy() {
+        // Create empty copy
+        Bean copy = createCopiedInstance();
+
+        // Copy property values
+        for (Property property : getProperties()) {
+            Object value = property.getValue();
+
+            // Deep copy bean values -- TODO: Unless they are meant to be references??  Introduce BeanReference type?
+            if (value instanceof Bean) {
+                value = ((Bean)value).createCopy();
+            }
+
+            copy.getProperty(property.getName()).set(value);
+        }
+
+        return copy;
+    }
+
+    protected abstract Bean createCopiedInstance();
 }
